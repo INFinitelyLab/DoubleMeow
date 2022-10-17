@@ -25,6 +25,8 @@ public class Builder : MonoBehaviour
     [SerializeField] private float _distanceForBuildings;
     [SerializeField] private float _distanceForDecoBuildings;
 
+    // Hello wordl!
+
     private string _currentIdentityName;
     private float _decoEndPoint;
     private float _totalVehicleWidth;
