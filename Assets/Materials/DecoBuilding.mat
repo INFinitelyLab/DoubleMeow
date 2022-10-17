@@ -12,8 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _RECEIVE_SHADOWS_OFF
+  m_InvalidKeywords: []
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -24,6 +23,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - Texture2D_63AF8BF8:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: 8824163347257e9418ad776191ede5e3, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -182,6 +185,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - Vector1_A1626516: 80
     - _AlphaClip: 0
     - _AmbiencePower: 1
     - _AmbientBrightness: 0
@@ -341,6 +345,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
+    - Color_9CBEB534: {r: 1, g: 1, b: 1, a: 0}
     - _AnimeColor1: {r: 1, g: 1, b: 1, a: 1}
     - _AnimeColor2: {r: 1.35, g: 1.35, b: 1.35, a: 1}
     - _AnimeColor3: {r: 2, g: 2, b: 2, a: 1}
@@ -350,6 +355,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CurvatureDirection: {r: 0.005, g: 0, b: 0, a: 0}
     - _CurvatureTest: {r: 0, g: 0, b: 0, a: 0}
+    - _Curve_Direction: {r: -0.0067, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}

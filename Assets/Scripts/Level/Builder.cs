@@ -21,6 +21,10 @@ public class Builder : MonoBehaviour
     [SerializeField] private float _buildingWidth;
     [SerializeField] private int _startCount;
 
+    [Space, Header("Special for xAxIxRx"), Space]
+    [SerializeField] private float _distanceForBuildings;
+    [SerializeField] private float _distanceForDecoBuildings;
+
     private string _currentIdentityName;
     private float _decoEndPoint;
     private float _totalVehicleWidth;
@@ -74,7 +78,7 @@ public class Builder : MonoBehaviour
         float currentPlayerPosition = Player.Movement.transform.position.z;
         float lastBuildingPosition = _pool.Last().transform.position.z;
 
-        while ( currentPlayerPosition + 50 > lastBuildingPosition )
+        while ( currentPlayerPosition + _distanceForDecoBuildings > lastBuildingPosition )
         {
             _pastBuilding = _currentBuilding;
             _currentBuilding = Portal.IsWaitingForSecondPortal? _startBuilding : _nextBuilding;
@@ -234,6 +238,7 @@ public class Builder : MonoBehaviour
         _trigger.Triggered -= Regenerate;
 
         if (_pool.Last().IsCanConnectToVehicle == false) CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
+        if (Portal.IsWaitingForSecondPortal) CreateNewBuilding(_startBuilding, false);
 
         if( _currentIdentityName != _vehicle.name )
         {
@@ -269,7 +274,7 @@ public class Builder : MonoBehaviour
 
     private IEnumerator MetroLoop()
     {
-        yield return new WaitForSeconds(30);
+        yield return new WaitForSeconds(60);
 
         while(Game.IsActive)
         {
@@ -286,7 +291,7 @@ public class Builder : MonoBehaviour
 
         while( isActive == false )
         {
-            if ( Mathf.Abs(_player.position.z - building.position.z) < 20 )
+            if ( Mathf.Abs(_player.position.z - building.position.z) < _distanceForBuildings )
             {
                 isActive = true;
 

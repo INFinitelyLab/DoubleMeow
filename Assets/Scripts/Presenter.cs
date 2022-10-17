@@ -114,4 +114,9 @@ public class Presenter : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
     }
+
+    private void OnDisable()
+    {
+        Shader.SetGlobalFloat("_CurvatureIntensive", 0);
+    }
 }

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 0.461
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 1534364453}
-  m_IndirectSpecularColor: {r: 0.30262432, g: 0.3375112, b: 0.39564294, a: 0.461}
+  m_IndirectSpecularColor: {r: 0.3008451, g: 0.33522525, b: 0.3938315, a: 0.461}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -929,6 +929,8 @@ MonoBehaviour:
   _metroer: {fileID: 291768955}
   _buildingWidth: 1.2
   _startCount: 5
+  _distanceForBuildings: 30
+  _distanceForDecoBuildings: 50
 --- !u!4 &291768953
 Transform:
   m_ObjectHideFlags: 0
