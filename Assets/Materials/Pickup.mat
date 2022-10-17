@@ -11,16 +11,14 @@ Material:
   m_Shader: {fileID: -6465566751694194690, guid: 106aca176b52a69429a27ac3e511f9ae, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - _RECEIVE_SHADOWS_OFF
-  - _SPECULAR_SETUP
-  m_InvalidKeywords: []
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: _ParallaxMap
   m_SavedProperties:
@@ -55,7 +53,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Emission:
-        m_Texture: {fileID: 2800000, guid: 25be57c8de4f67f4eb84ae3176aca9f3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 9bfc691f67021154eb508f1b3e8e765c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -95,6 +93,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LightmapTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MSA:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -210,6 +212,7 @@ Material:
     - _DstBlendAlpha: 0
     - _Emission: 0
     - _EmissionStrength: 1
+    - _Enable_AO: 0
     - _EnvironmentReflections: 1
     - _Flat: 0
     - _Fog: 1
