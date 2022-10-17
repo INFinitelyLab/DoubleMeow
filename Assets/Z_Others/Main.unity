@@ -15,7 +15,7 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
   m_Fog: 1
-  m_FogColor: {r: 1, g: 0, b: 0.6667013, a: 1}
+  m_FogColor: {r: 0.21354997, g: 0.31132078, b: 0.20999467, a: 1}
   m_FogMode: 1
   m_FogDensity: 0.035
   m_LinearFogStart: 15.1
@@ -891,7 +891,6 @@ GameObject:
   - component: {fileID: 291768952}
   - component: {fileID: 291768954}
   - component: {fileID: 291768955}
-  - component: {fileID: 291768956}
   m_Layer: 0
   m_Name: Buildings
   m_TagString: Untagged
@@ -989,14 +988,6 @@ MonoBehaviour:
   _vehicleXOffset: 1.1
   _distanceBetweenVehicles: 6
   _generationDistance: 50
---- !u!81 &291768956
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 291768951}
-  m_Enabled: 1
 --- !u!1 &296431478
 GameObject:
   m_ObjectHideFlags: 0
@@ -4568,7 +4559,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.4245283, g: 0.07017915, b: 0, a: 0}
+  m_BackGroundColor: {r: 0.21568628, g: 0.3137255, b: 0.21176471, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -7459,8 +7450,8 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 0.8978462, g: 0, b: 1, a: 1}
-  m_Intensity: 12.57
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 0.1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
