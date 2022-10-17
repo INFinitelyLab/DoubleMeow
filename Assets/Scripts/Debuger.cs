@@ -5,6 +5,7 @@ using System.Diagnostics;
 public class Debuger : MonoBehaviour
 {
     public TextMeshProUGUI text;
+    public GameObject _generation;
 
     public float updateInterval = 0.5F;
     private double lastInterval;
@@ -25,6 +26,8 @@ public class Debuger : MonoBehaviour
         frames = 0;
 
         UpdateInfo();
+
+        Destroy(_generation);
     }
 
 
