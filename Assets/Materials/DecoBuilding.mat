@@ -309,7 +309,7 @@ Material:
     - _ShadowOverlaySwayAmount: 0.01
     - _ShadowsEnabled: 1
     - _Shininess: 1
-    - _Smoothness: 0.5
+    - _Smoothness: 0.644
     - _SmoothnessSource: 0
     - _SmoothnessTextureChannel: 0
     - _SourceBlend: 5
