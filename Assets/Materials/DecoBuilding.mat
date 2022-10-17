@@ -60,7 +60,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Emission:
-        m_Texture: {fileID: 2800000, guid: ade5fe548b7e6ab48a02681234ca0097, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7e1bedcde65689d4f8709962afb95841, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -104,11 +104,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MSA:
-        m_Texture: {fileID: 2800000, guid: 41c3d672654f9b847a34e448d69794d7, type: 3}
+        m_Texture: {fileID: 2800000, guid: bb473570c8665ed4d80b4e9fb96b6d42, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 2c6998bc21ef1e34fa681a641a7fe058, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0671f7696c4ef4e4fa89af7ab94a7c42, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCapTex:
@@ -120,7 +120,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Normal:
-        m_Texture: {fileID: 2800000, guid: ac9c04e00c182154388006b0f3eb2624, type: 3}
+        m_Texture: {fileID: 2800000, guid: c67314c3bfa858e4fbd07f7d92dc179f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
@@ -313,7 +313,7 @@ Material:
     - _ShadowOverlaySwayAmount: 0.01
     - _ShadowsEnabled: 1
     - _Shininess: 1
-    - _Smoothness: 0.644
+    - _Smoothness: 0.585
     - _SmoothnessSource: 0
     - _SmoothnessTextureChannel: 0
     - _SourceBlend: 5
