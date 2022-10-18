@@ -30,20 +30,31 @@ public class Movement : MonoBehaviour
     public RoadLine CurrentLine => _line;
 
 
-
     public void Jump()
     {
-        if (Game.IsActive == false || _inPortal) return;
+        StopAllCoroutines();
+
+        StartCoroutine(HoldJump(1));
+    }
+
+
+    private bool TryJump()
+    {
+        if (Game.IsActive == false || _inPortal) return false;
 
         if (_isVehicleControl == true)
-            throw new Exception("Нельзя прыгать будучи в машине");
+            return false;
 
         if ( _grounder.IsGrounded && _velocity.y <= 0)
         {
             _velocity.y = _jumpForce;
 
             Jumped?.Invoke();
+
+            return true;
         }
+        
+        return false;
     }
 
 
@@ -216,5 +227,20 @@ public class Movement : MonoBehaviour
     private void _ChangeLineTo()
     {
         _line = _newLine;
+    }
+
+
+    private System.Collections.IEnumerator HoldJump(float duration)
+    {
+        float time = 0;
+
+        while( time < duration && TryJump() == false)
+        {
+            time += Time.fixedDeltaTime;
+
+            Debug.Log("Hello");
+
+            yield return new WaitForFixedUpdate();
+        }
     }
 }

@@ -81,7 +81,7 @@ public sealed class Inputer : SingleBehaviour<Inputer>
         {
             Vector2 delta = screenPosition - _pressedPosition;
 
-            if( delta.magnitude < _screenResolution.width / 300 || _isPressed == false ) return;
+            if( delta.magnitude < _screenResolution.width / 200 || _isPressed == false ) return;
 
             Direction direction = Mathf.Abs(delta.x) > Mathf.Abs(delta.y) ? (delta.x > 0 ? Direction.Right : Direction.Left) : (delta.y < 0 ? Direction.Down : Direction.Up);
 

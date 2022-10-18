@@ -25,7 +25,7 @@ public class MetroVehicle : Building
 
     private void FixedUpdate()
     {
-        if (Game.IsActive == false && _moveSpeed != 0) if (Mathf.Abs(Player.Movement.transform.position.x - transform.position.x) < 0.75f) _moveSpeed = Mathf.MoveTowards( _moveSpeed, 0 , 5 * Time.fixedDeltaTime );
+        if (Game.IsActive == false && _moveSpeed != 0) if (Mathf.Abs(Player.Movement.transform.position.x - transform.position.x) < 0.75f || Game.Mode.InVehicleMode == false) _moveSpeed = Mathf.MoveTowards( _moveSpeed, 0 , 5 * Time.fixedDeltaTime );
 
         _body.transform.localPosition += Vector3.back * (_moveSpeed * _player.walkSpeed * Game.Difficulty) * Time.fixedDeltaTime;
     }
