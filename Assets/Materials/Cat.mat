@@ -13,7 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 6
+  m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -296,7 +296,7 @@ Material:
     - _ShadowOverlaySwayAmount: 0.01
     - _ShadowsEnabled: 1
     - _Shininess: 0.078125
-    - _Smoothness: 0.518
+    - _Smoothness: 0.718
     - _SmoothnessTextureChannel: 0
     - _SourceBlend: 5
     - _Specular: 1

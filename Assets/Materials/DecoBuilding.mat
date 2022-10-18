@@ -313,7 +313,7 @@ Material:
     - _ShadowOverlaySwayAmount: 0.01
     - _ShadowsEnabled: 1
     - _Shininess: 1
-    - _Smoothness: 0.585
+    - _Smoothness: 0.5
     - _SmoothnessSource: 0
     - _SmoothnessTextureChannel: 0
     - _SourceBlend: 5
@@ -355,7 +355,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CurvatureDirection: {r: 0.005, g: 0, b: 0, a: 0}
     - _CurvatureTest: {r: 0, g: 0, b: 0, a: 0}
-    - _Curve_Direction: {r: -0.0067, g: 0, b: 0, a: 0}
+    - _Curve_Direction: {r: 0, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}
