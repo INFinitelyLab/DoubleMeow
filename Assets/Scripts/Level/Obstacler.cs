@@ -8,6 +8,8 @@ public class Obstacler : MonoBehaviour
     [SerializeField] private Milk _milk;
     [SerializeField] private Pickup[] _pickups;
     [SerializeField] private Portal _portal;
+    [SerializeField] private Accelerator _accelerator;
+    [SerializeField] private PerfectJumpDetector _jumpDetector;
 
     public RoadLine Generate(Building building, RoadLine startLine, RoadLine endLine)
     {
@@ -16,7 +18,7 @@ public class Obstacler : MonoBehaviour
         Field field = new Field( size );
 
         endLine = field.GeneratePath( startLine , endLine , 3, building);
-        StartCoroutine(field.GenerateObstacles(_obstacles, 30, building, _portal));
+        StartCoroutine(field.GenerateObstacles(_obstacles, 30, building, _portal, _accelerator, _jumpDetector));
         StartCoroutine(field.GeneratePickups( _milk, _pickups , building));
 
         return endLine;
@@ -72,7 +74,7 @@ public class Obstacler : MonoBehaviour
         }
 
 
-        public IEnumerator GenerateObstacles( Obstacle[] obstacles, int chanceToSpawn, Building building, Portal portal)
+        public IEnumerator GenerateObstacles(Obstacle[] obstacles, int chanceToSpawn, Building building, Portal portal, Accelerator accelerator, PerfectJumpDetector detector)
         {
             if (building.IsPortalFriendly && Portal.IsAlreadyExist == false && Portal.IsAlreadyTransite == false)
             {
@@ -111,12 +113,32 @@ public class Obstacler : MonoBehaviour
                         break;
                     }
                 }
+
             }
+
+            RoadLine[] lines = building.EndLines.ToRoadLine().ToArray();
+
+            foreach(RoadLine line in lines)
+            {
+                Placeable placeable = Instantiate(detector, building.transform);
+
+                placeable.transform.localPosition = new Vector3( line.ToInt() * 0.746f, 0.01f, building.EndPoint.transform.localPosition.z );
+            }
+
+            Vector2Int acceleratorPosition = new Vector2Int( Random.Range(0,3), Random.Range(0, _path.GetLength(1) / 3));
+
+            /*if (IsCanPlaceAccelerator(acceleratorPosition.x, acceleratorPosition.y))
+            {
+                Placeable placeable = Instantiate(accelerator, building.transform);
+
+                placeable.transform.localPosition = new Vector3( (acceleratorPosition.x - 1) * 0.746f, 0.01f, acceleratorPosition.y * 3 + 1.5f);
+            }*/
+
 
         }
 
 
-        public IEnumerator GeneratePickups( Milk milk, Pickup[] pickups , Building building )
+        public IEnumerator GeneratePickups( Milk milk, Pickup[] pickups , Building building)
         {
             Vector2Int lastPosition = Vector2Int.zero;
 
@@ -168,6 +190,21 @@ public class Obstacler : MonoBehaviour
             {
                 Placeable = placeable;
             }
+        }
+
+        
+        private bool IsCanPlaceAccelerator(int x, int quarterY)
+        {
+            if (quarterY < 0 && quarterY >= _path.GetLength(1) / 3) return false;
+
+            quarterY++;
+
+            for( int y = quarterY * 3 - 3; y < quarterY * 3; y++ )
+            {
+                if (_path[x, y] == false) return false;
+            }
+
+            return true;
         }
     }
 }

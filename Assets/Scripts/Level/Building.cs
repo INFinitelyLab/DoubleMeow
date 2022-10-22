@@ -80,9 +80,9 @@ public class Building : MonoBehaviour, IGroundeable
     }
 
 
-    private void FixedUpdate()
+    private void Update()
     {
-        if (_targetPosition != Vector3.zero ) _transform.localPosition = Vector3.Lerp( _transform.localPosition, _targetPosition, 10 * Time.fixedDeltaTime );
+        if (_targetPosition != Vector3.zero ) _transform.localPosition = Vector3.Lerp( _transform.localPosition, _targetPosition, 10 * Time.deltaTime );
     }
 
 

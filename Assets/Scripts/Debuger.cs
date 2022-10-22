@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Diagnostics;
+using System.Text;
 
 public class Debuger : MonoBehaviour
 {
@@ -11,16 +12,22 @@ public class Debuger : MonoBehaviour
     private double lastInterval;
     private int frames;
     private float fps;
+
     private int level;
+    private int deathCount;
 
 
     void Start()
     {
-        if(Application.platform == RuntimePlatform.Android) Application.targetFrameRate = 60;
+        if(Application.platform == RuntimePlatform.Android) Application.targetFrameRate = 120;
         if (Application.platform == RuntimePlatform.WindowsPlayer) QualitySettings.vSyncCount = -1;
 
+        Resources.LoadAll<Material>("");
+
         Stats.LevelUped += OnLevelUped;
+
         level = Stats.Level;
+        deathCount = Stats.DeathCount;
 
         lastInterval = Time.realtimeSinceStartup;
         frames = 0;
@@ -39,9 +46,24 @@ public class Debuger : MonoBehaviour
 
     void UpdateInfo()
     {
-        string info = "FPS : " + fps + "\n";
+        StringBuilder info = new StringBuilder();
 
-        text.text = info;
+        info.Append("FPS : ");
+        info.Append(fps);
+        info.Append("\n");
+        info.Append("Level : ");
+        info.Append(level);
+        info.Append("\n");
+        info.Append("Difficulty : ");
+        info.Append(Game.Difficulty);
+        info.Append("\n");
+        info.Append("DeathCount : ");
+        info.Append(deathCount);
+        info.Append("\n");
+        info.Append("Jump Multiplier : ");
+        info.Append(Stats.PerfectJumpCount);
+
+        text.text = info.ToString();
 
         Invoke(nameof(UpdateInfo), 0.5f);
     }

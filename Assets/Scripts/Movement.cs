@@ -47,7 +47,9 @@ public class Movement : MonoBehaviour
 
         if ( _grounder.IsGrounded && _velocity.y <= 0)
         {
-            _velocity.y = _jumpForce;
+            PerfectJumpDetector.OnJump();
+
+            _velocity.y = _transform.position.y + _jumpForce;
 
             Jumped?.Invoke();
 
@@ -67,7 +69,7 @@ public class Movement : MonoBehaviour
 
         if (_grounder.IsGrounded == false)
         {
-            _velocity.y = -_jumpForce;
+            _velocity.y = -_jumpForce / 1.5f;
         }
     }
 
@@ -94,7 +96,7 @@ public class Movement : MonoBehaviour
     }
 
 
-    private void FixedUpdate()
+    private void Update()
     {
         bool grounded = _controller.isGrounded;
 
@@ -102,7 +104,7 @@ public class Movement : MonoBehaviour
         {
             if (_controller.isGrounded == false || _velocity.y > 0)
             {
-                _velocity.y += Physics.gravity.y * _gravityScale * Time.fixedDeltaTime;
+                _velocity.y += Physics.gravity.y * _gravityScale * Time.deltaTime;
             }
             else
             {
@@ -116,27 +118,27 @@ public class Movement : MonoBehaviour
 
         if (Game.IsActive)
         {
-            _velocity.x = (_targetPosition.x - _transform.position.x) * _surfSpeed * 1 * Time.fixedDeltaTime;
-            _velocity.z = Mathf.Lerp(_velocity.z, _walkSpeed * Game.Difficulty * Time.fixedDeltaTime, 10 * Time.fixedDeltaTime);
+            _velocity.x = (_targetPosition.x - _transform.position.x) * _surfSpeed;
+            _velocity.z = Mathf.Lerp(_velocity.z, _walkSpeed * Game.Difficulty, 10 * Time.deltaTime);
         }
         else
         {
             _velocity.x = 0;
-            _velocity.z = Mathf.Lerp( _velocity.z , 0 , 6 * Time.fixedDeltaTime );
+            _velocity.z = Mathf.Lerp( _velocity.z , 0 , 6 * Time.deltaTime);
         }
 
-        _controller.Move(_velocity);
+        _controller.Move( _velocity * Time.deltaTime);
 
         if (_controller.velocity.z <= 0 && _transform.position.z > 3 && _velocity.z > 0)
         {
             Player.Detector.Bump();
 
-            _velocity = new Vector3( 0, _jumpForce / 3, Game.Mode.InVehicleMode? -0.1f : -0.03f );
-        }    
+            _velocity = new Vector3( 0, _jumpForce / 3, Game.Mode.InVehicleMode? -15f : -5f );
+        }
 
-        if (grounded != _controller.isGrounded) Grounded?.Invoke( _controller.isGrounded );
+        if (grounded != _controller.isGrounded) Grounded?.Invoke(_controller.isGrounded);
 
-        _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.fixedDeltaTime );
+        _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.deltaTime);
     }
 
 
@@ -189,7 +191,7 @@ public class Movement : MonoBehaviour
 
         _line = (RoadLine)( _targetPosition.x / _roadWidth);
         _targetPosition.x = _line.ToInt() * _roadWidth;
-        _velocity.y = 0.1f;
+        _velocity.y = 8f;
 
         _walkSpeed /= 2f;
     }
@@ -201,11 +203,13 @@ public class Movement : MonoBehaviour
 
         _newLine = (RoadLine)(int)Mathf.Round(exitPortalPosition.x);
 
-        Invoke("_ChangeLineTo", 0.3f / Game.Difficulty);
+        //Invoke("_ChangeLineTo", 0.3f / Game.Difficulty);
+
+        _line = _newLine;
 
         _walkSpeed *= 3f;
 
-        Player.Presenter.SetScale(0, 7f / distanceToPortal);
+        Player.Presenter.SetScale(0.04f, 7f / distanceToPortal);
     }
 
     public void DisablePortalControl()
@@ -216,18 +220,19 @@ public class Movement : MonoBehaviour
 
         _velocity.y = _jumpForce * 1.1f;
 
-        _velocity.z = 20 * Time.fixedDeltaTime;
+        _velocity.z = 20 * Game.Difficulty;
 
         Player.Presenter.SetScale(0.55f, 2.5f);
         Player.Presenter.OnJump();
     }
 
-    private RoadLine _newLine;
 
-    private void _ChangeLineTo()
-    {
-        _line = _newLine;
-    }
+    public void EnableAccelerate() => _walkSpeed *= 4;
+
+    public void DisableAccelerate() => _walkSpeed /= 4;
+
+
+    private RoadLine _newLine;
 
 
     private System.Collections.IEnumerator HoldJump(float duration)
@@ -237,8 +242,6 @@ public class Movement : MonoBehaviour
         while( time < duration && TryJump() == false)
         {
             time += Time.fixedDeltaTime;
-
-            Debug.Log("Hello");
 
             yield return new WaitForFixedUpdate();
         }

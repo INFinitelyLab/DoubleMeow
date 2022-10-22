@@ -8,6 +8,7 @@ public class Presenter : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private float _bendIntensive;
     [SerializeField] private float _bendSmoothTime;
+    [SerializeField] private SkinnedMeshRenderer _mesh;
 
     private Transform _transform;
     private Quaternion _targetRotation;
@@ -88,6 +89,18 @@ public class Presenter : MonoBehaviour
     }
 
 
+    public void EnableCat()
+    {
+        _mesh.enabled = true;
+    }
+
+
+    public void DisableCat()
+    {
+        _mesh.enabled = false;
+    }
+
+
     public void Update()
     {
         _transform.localRotation = Quaternion.Lerp( _transform.localRotation, _targetRotation, _moveSpeed * _bendSmoothTime * Time.deltaTime );
@@ -96,7 +109,7 @@ public class Presenter : MonoBehaviour
 
         _moveSpeed = Mathf.MoveTowards( _moveSpeed, 1 , Time.deltaTime );
 
-        _transform.localScale = Vector3.MoveTowards( _transform.localScale, _scale, (_rescaleTime * Game.Difficulty ) * Time.deltaTime );
+        //_transform.localScale = Vector3.MoveTowards( _transform.localScale, _scale, (_rescaleTime * Game.Difficulty ) * Time.deltaTime );
     }
 
 

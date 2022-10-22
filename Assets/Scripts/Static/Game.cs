@@ -69,6 +69,7 @@ public sealed class Game : SingleBehaviour<Game>
         IsActive = false;
 
         Stats.Save();
+        Stats.OnUnperfectJump();
 
         Instance.StopCoroutine( _acceleration );
     }
@@ -84,7 +85,7 @@ public sealed class Game : SingleBehaviour<Game>
     {
         while(IsActive)
         {
-            Difficulty = Mathf.MoveTowards( Difficulty, 2, 0.01f );
+            Difficulty = Mathf.MoveTowards( Difficulty, 2, 0.1f );
 
             yield return new WaitForSeconds(10);
         }

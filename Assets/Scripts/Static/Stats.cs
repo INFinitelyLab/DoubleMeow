@@ -7,6 +7,7 @@ public static class Stats
     public static SecureInt Level { get; private set; } = new SecureInt(0,"Level");
 
     public static int DeathCount { get; private set; }
+    public static int PerfectJumpCount { get; private set; }
 
     private static SecureInt _levelCoins;
 
@@ -53,6 +54,7 @@ public static class Stats
     }
 
 
+    
     private static void LevelUp()
     {
         Level.Increase(1);
@@ -65,10 +67,25 @@ public static class Stats
     }
 
 
+
     public static void OnDeath()
     {
         DeathCount++;
     }
+
+
+
+    public static void OnPerfectJump()
+    {
+        PerfectJumpCount++;
+    }
+
+
+    public static void OnUnperfectJump()
+    {
+        PerfectJumpCount = 0;
+    }
+
 
 
     public static void Save()

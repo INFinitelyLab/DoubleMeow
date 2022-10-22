@@ -11,6 +11,17 @@ public class Portal : Placeable
             else
                 EndPlayerTransition();
         }
+
+        Player.Presenter.EnableCat();
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.TryGetComponent<Player>(out var player))
+        {
+            if (IsAlreadyTransite) Player.Presenter.DisableCat();
+        }
     }
 
 
@@ -52,7 +63,7 @@ public class Portal : Placeable
 
     public static void StartPlayerTransition(float distanceToPortal)
     {
-        if (IsAlreadyTransite == true) throw new System.Exception("Нельзя телепортировать игрока, игрок УЖЕ телепортируется!");
+        if (IsAlreadyTransite == true) throw new System.Exception("РќРµР»СЊР·СЏ С‚РµР»РµРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РёРіСЂРѕРєР°, РёРіСЂРѕРє РЈР–Р• С‚РµР»РµРїРѕСЂС‚РёСЂСѓРµС‚СЃСЏ!");
 
         State = PortalState.Transite;
 
@@ -62,7 +73,7 @@ public class Portal : Placeable
 
     public static void EndPlayerTransition()
     {
-        if( IsAlreadyTransite == false ) throw new System.Exception("Нельзя оставить телепортацию игрока, игрок НЕ телепортируется!");
+        if( IsAlreadyTransite == false ) throw new System.Exception("РќРµР»СЊР·СЏ РѕСЃС‚Р°РІРёС‚СЊ С‚РµР»РµРїРѕСЂС‚Р°С†РёСЋ РёРіСЂРѕРєР°, РёРіСЂРѕРє РќР• С‚РµР»РµРїРѕСЂС‚РёСЂСѓРµС‚СЃСЏ!");
 
         State = PortalState.None;
 

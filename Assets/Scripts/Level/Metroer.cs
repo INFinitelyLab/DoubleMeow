@@ -117,7 +117,7 @@ public class Metroer : MonoBehaviour
         }
 
 
-        _regenTrigger.MoveTo(_regenTrigger.transform.localPosition.z + 2);
+        _regenTrigger.MoveTo(_regenTrigger.transform.localPosition.z + 2 * Game.Difficulty);
 
         if (_distance >= _targetMetroDistance )
         {

@@ -34,16 +34,14 @@ public class Vehicle : Building
     }
 
 
-    private void FixedUpdate()
+    private void Update()
     {
-        _body.localPosition += (_isLeft? Vector3.right : Vector3.left) * Player.Movement.walkSpeed * Game.Difficulty * _moveIntensive * Time.fixedDeltaTime;
+        _body.localPosition += (_isLeft? Vector3.right : Vector3.left) * Player.Movement.walkSpeed * Game.Difficulty * _moveIntensive * Time.deltaTime;
     }
 
 
     private void OnTriggerEnter(Collider collision)
     {
-        Debug.Log("FDYBVu");
-
         if (collision.transform.TryGetComponent<Player>(out var player))
         {
             _animator.Play("Vehicle_Bounce");

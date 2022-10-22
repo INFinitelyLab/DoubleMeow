@@ -22,7 +22,7 @@ public class FollowCamera : MonoBehaviour, ILowereable
     }
 
 
-    private void Update()
+    private void LateUpdate()
     {
         if (_target == null)
             throw new System.Exception("Не назначен объект для преследования камерой");

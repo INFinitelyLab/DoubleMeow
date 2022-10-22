@@ -45,7 +45,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 5917537482288442099, guid: 2eab6882e2c45714eb48d56dd0a208f3, type: 3}
+  m_Motion: {fileID: 5917537482288442099, guid: 1d573ebfe9cd1a6418cc16d94fb1e4c8, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -272,7 +272,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Jump
-  m_Speed: 2
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 4017913922249678484}

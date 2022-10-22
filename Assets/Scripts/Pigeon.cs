@@ -34,11 +34,11 @@ public class Pigeon : MonoBehaviour
     }
 
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (isFlyed == false) return;
 
-        _currentSpeed = Mathf.MoveTowards(_currentSpeed, FlySpeed, 10 * Time.fixedDeltaTime);
-        _transform.position = Vector3.MoveTowards( _transform.position, _targetPosition, _currentSpeed * Time.fixedDeltaTime );
+        _currentSpeed = Mathf.MoveTowards(_currentSpeed, FlySpeed, 10 * Time.deltaTime);
+        _transform.position = Vector3.MoveTowards( _transform.position, _targetPosition, _currentSpeed * Time.deltaTime );
     }
 }

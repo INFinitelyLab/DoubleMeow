@@ -20,15 +20,15 @@ public class Milk : Pickup
         Achievements.Unlock("1234");
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        _transform.localRotation *= Quaternion.Euler(0f, Time.fixedDeltaTime * 360, 0f);
+        _transform.localRotation *= Quaternion.Euler(0f, Time.deltaTime * 360, 0f);
 
         if (Game.Mode.InMagnetMode == false)
             return;
 
         float distance = Vector3.Distance(_transform.position, Player.Movement.transform.position);
 
-        if ( distance < 1f ) _transform.position = Vector3.MoveTowards( _transform.position, Player.Movement.transform.position, (Time.fixedDeltaTime * 30) / (distance * 5) );
+        if ( distance < 2f) _transform.position = Vector3.MoveTowards( _transform.position, Player.Movement.transform.position, (Time.deltaTime * 30) / (distance * 5) );
     }
 }

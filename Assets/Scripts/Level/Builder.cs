@@ -95,7 +95,7 @@ public class Builder : MonoBehaviour
             lastBuildingPosition = _pool.Last().transform.position.z;
         }
 
-        _trigger.MoveTo( _trigger.transform.position.z + 2 );
+        _trigger.MoveTo( _trigger.transform.position.z + 2 * Game.Difficulty );
 
 
     }
@@ -127,17 +127,17 @@ public class Builder : MonoBehaviour
 
         building.transform.SetParent(transform);
 
-        if (isStartBuilding == false)
+        if (isStartBuilding == false && origin != _vehicle)
         {
             _endLine = _obstacler.Generate(building, _endLine, _nextEndLine);
         }
 
         if (_pool.Count > 0)
         {
-            if (origin == _vehicle) building.transform.localPosition = Vector3.forward * ((fromZ == 0? _pool.Last().EndPoint.position.z : fromZ) + (_vehiclePropastWidth * Game.Difficulty));
+            if (origin == _vehicle) building.transform.localPosition = Vector3.forward * ((fromZ == 0? _pool.Last().EndPoint.position.z : fromZ) + ((_vehiclePropastWidth + 1) * Game.Difficulty) - 1);
             else
 
-            building.transform.localPosition = Vector3.forward * ((fromZ == 0?_pool.Last().EndPoint.position.z : fromZ) + (_currentBuilding.IsNearly || _pastBuilding.IsNearly? 0 : _buildingWidth * Game.Difficulty));
+            building.transform.localPosition = Vector3.forward * ((fromZ == 0?_pool.Last().EndPoint.position.z : fromZ) + (_currentBuilding.IsNearly || _pastBuilding.IsNearly? 0 : (((_buildingWidth + 1) * Game.Difficulty) - 1)));
         }
         else
         {
