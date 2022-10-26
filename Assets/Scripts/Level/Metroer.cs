@@ -49,9 +49,7 @@ public class Metroer : MonoBehaviour
 
     private Building CreateNewBuilding(Building origin, Vector3 position)
     {
-        Building metro = Instantiate(origin, transform);
-
-        metro.transform.localPosition = position;
+        Building metro = Instantiate(origin, position, Quaternion.identity, transform);
 
         return metro;
     }
@@ -117,7 +115,7 @@ public class Metroer : MonoBehaviour
         }
 
 
-        _regenTrigger.MoveTo(_regenTrigger.transform.localPosition.z + 2 * Game.Difficulty);
+        _regenTrigger.MoveTo( Player.Movement.transform.localPosition.z + 2 * Game.Difficulty);
 
         if (_distance >= _targetMetroDistance )
         {

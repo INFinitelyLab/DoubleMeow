@@ -75,6 +75,12 @@ public static class Extentions
     }
 
 
+    public static T Random<T>(this T[] list)
+    {
+        return list.Length > 0 ? list[UnityEngine.Random.Range(0, list.Length)] : default;
+    }
+
+
     public static T ClosestRandom<T>(this List<T> list, T origin)
     {
         if (list.Count < 2)

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using UnityEngine.UI;
 
 public sealed class Inputer : SingleBehaviour<Inputer>
 {
@@ -11,16 +10,20 @@ public sealed class Inputer : SingleBehaviour<Inputer>
     private void OnEnable()
     {
         Swiper.Swiped += OnSwiped;
+        Swiper.Draged += OnDraged;
     }
 
 
     private void OnDisable()
     {
         Swiper.Swiped -= OnSwiped;
+        Swiper.Draged -= OnDraged;
     }
 
 
     private void OnSwiped(Direction direction) => Swiped?.Invoke(direction);
+
+    private void OnDraged(float axis) => Draged?.Invoke(axis);
 
 
     private void Update()
@@ -49,17 +52,18 @@ public sealed class Inputer : SingleBehaviour<Inputer>
             }
         }
 
-
-        if (Input.GetKey(KeyCode.A)) Draged?.Invoke(-10 * Time.deltaTime);
-        if (Input.GetKey(KeyCode.D)) Draged?.Invoke( 10 * Time.deltaTime);
-
         //Debug
         if (Input.GetKeyDown(KeyCode.R)) Game.Restart();
 
 
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.T)) Application.targetFrameRate = Application.targetFrameRate == 20 ? 120 : 20;
+
+        if (Input.GetKeyDown(KeyCode.C))
         {
-            Application.targetFrameRate = Application.targetFrameRate == 20 ? 120 : 20;
+            if (Game.Mode.InCurveMode)
+                Game.Mode.DisableCurveMode();
+            else
+                Game.Mode.EnableCurveMode();
         }
     }
 
@@ -67,10 +71,14 @@ public sealed class Inputer : SingleBehaviour<Inputer>
     private static class Swiper
     {
         private static Resolution _screenResolution;
+        private static Vector2 _lastPressedPosition;
+        private static Vector2 _lastPressedPosition2;
         private static Vector2 _pressedPosition;
         private static bool _isPressed;
 
+
         public static Action<Direction> Swiped;
+        public static Action<float> Draged;
 
 
         public static void OnPressed(Vector2 screenPosition)
@@ -79,6 +87,8 @@ public sealed class Inputer : SingleBehaviour<Inputer>
 
             _pressedPosition = screenPosition;
 
+            _lastPressedPosition2 = _lastPressedPosition;
+
             _isPressed = true;
         }
 
@@ -86,6 +96,10 @@ public sealed class Inputer : SingleBehaviour<Inputer>
         public static void OnMove(Vector2 screenPosition)
         {
             Vector2 delta = screenPosition - _pressedPosition;
+
+            Draged?.Invoke( Mathf.Clamp((((screenPosition.x - (_pressedPosition.x - _lastPressedPosition2.x)) / _screenResolution.width)) * 3f, -1, 1) );
+
+            _lastPressedPosition = (screenPosition - (_pressedPosition - _lastPressedPosition2));
 
             if( delta.magnitude < _screenResolution.width / 200 || _isPressed == false ) return;
 

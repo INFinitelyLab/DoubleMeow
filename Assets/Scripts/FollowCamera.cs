@@ -8,11 +8,14 @@ public class FollowCamera : MonoBehaviour, ILowereable
     private Transform _transform;
 
     private Vector3 _position;
+    private Vector3 _rotationOffset;
 
 
     private void Awake()
     {
         _transform = transform;
+
+        _rotationOffset = _transform.localEulerAngles;
 
         _offset = _transform.position;
 
@@ -31,12 +34,14 @@ public class FollowCamera : MonoBehaviour, ILowereable
 
         _currentOffset = Vector3.Lerp(_currentOffset, _idealOffset, _moveSpeed / 3 * Time.deltaTime);
 
-        _position.x = Mathf.Lerp(_position.x, _target.position.x + _currentOffset.x, _moveSpeed * Time.deltaTime);
-        _position.y = Mathf.Lerp(_position.y, (_lowers == 0? _target.position.y : 0) + _currentOffset.y, _moveSpeed * Time.deltaTime);
+        _position.x = Mathf.Lerp(_position.x, (_target.position.x + _currentOffset.x) * (Game.Mode.InCurveMode? 0.75f : 1f), _moveSpeed * Time.deltaTime);
+        _position.y = Mathf.Lerp(_position.y, (_lowers == 0? _target.position.y / 2 : 0) + _currentOffset.y, _moveSpeed * Time.deltaTime);
 
         _position.z = _target.position.z + _currentOffset.z;
 
         _transform.position = _position;
+
+        _transform.localRotation = Quaternion.Euler( _rotationOffset.x, _rotationOffset.y , _rotationOffset.z + (Game.Mode.InCurveMode? _transform.position.x * 5 : 0) );
     }
 
     #region Lowereable

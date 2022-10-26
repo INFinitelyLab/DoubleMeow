@@ -19,8 +19,6 @@ public class Debuger : MonoBehaviour
 
     void Start()
     {
-        if(Application.platform == RuntimePlatform.Android) Application.targetFrameRate = 120;
-        if (Application.platform == RuntimePlatform.WindowsPlayer) QualitySettings.vSyncCount = -1;
 
         Resources.LoadAll<Material>("");
 
@@ -62,6 +60,12 @@ public class Debuger : MonoBehaviour
         info.Append("\n");
         info.Append("Jump Multiplier : ");
         info.Append(Stats.PerfectJumpCount);
+        /*info.Append("\n");
+        info.Append("CPU : ");
+        info.Append(FrameTimingManager.GetCpuTimerFrequency());
+        info.Append("\n");
+        info.Append("CPU : ");
+        info.Append(FrameTimingManager.GetGpuTimerFrequency());*/
 
         text.text = info.ToString();
 

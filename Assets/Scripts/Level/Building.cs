@@ -80,7 +80,7 @@ public class Building : MonoBehaviour, IGroundeable
     }
 
 
-    private void Update()
+    protected virtual void Update()
     {
         if (_targetPosition != Vector3.zero ) _transform.localPosition = Vector3.Lerp( _transform.localPosition, _targetPosition, 10 * Time.deltaTime );
     }

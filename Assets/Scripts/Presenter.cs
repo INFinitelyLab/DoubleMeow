@@ -48,6 +48,18 @@ public class Presenter : MonoBehaviour
     }
 
 
+    public void EnableCurveMode()
+    {
+        _animator.SetTrigger("Belly");
+    }
+
+
+    public void OnRedraged(float intensive)
+    {
+        _transform.localRotation = Quaternion.Euler( 0, 0, intensive );
+    }
+
+
     public void EnableVehicleMode()
     {
         _ownVehicle.SetActive(true);
@@ -104,12 +116,11 @@ public class Presenter : MonoBehaviour
     public void Update()
     {
         _transform.localRotation = Quaternion.Lerp( _transform.localRotation, _targetRotation, _moveSpeed * _bendSmoothTime * Time.deltaTime );
-
-        _targetRotation = Quaternion.Lerp( _targetRotation, Quaternion.identity, _moveSpeed * _bendSmoothTime * Time.deltaTime );
+        _targetRotation = Quaternion.Lerp( _targetRotation, Quaternion.identity , _moveSpeed * _bendSmoothTime * Time.deltaTime );
 
         _moveSpeed = Mathf.MoveTowards( _moveSpeed, 1 , Time.deltaTime );
 
-        //_transform.localScale = Vector3.MoveTowards( _transform.localScale, _scale, (_rescaleTime * Game.Difficulty ) * Time.deltaTime );
+        _transform.localScale = Vector3.MoveTowards( _transform.localScale, _scale, (_rescaleTime * Game.Difficulty ) * Time.deltaTime );
     }
 
 
@@ -127,6 +138,7 @@ public class Presenter : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
     }
+
 
     private void OnDisable()
     {

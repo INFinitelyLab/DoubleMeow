@@ -18,6 +18,7 @@ public class Builder : MonoBehaviour
     [SerializeField] private RegenTrigger _trigger;
     [SerializeField] private Obstacler _obstacler;
     [SerializeField] private Metroer _metroer;
+    [SerializeField] private Curver _curver;
     [SerializeField] private float _buildingWidth;
     [SerializeField] private int _startCount;
 
@@ -55,7 +56,7 @@ public class Builder : MonoBehaviour
 
         Regenerate(false);
 
-        StartCoroutine(MetroLoop());
+        StartCoroutine(ErLoop());
     }
 
 
@@ -95,7 +96,7 @@ public class Builder : MonoBehaviour
             lastBuildingPosition = _pool.Last().transform.position.z;
         }
 
-        _trigger.MoveTo( _trigger.transform.position.z + 2 * Game.Difficulty );
+        _trigger.MoveTo( Player.Movement.transform.position.z + 2 * Game.Difficulty );
 
 
     }
@@ -235,9 +236,11 @@ public class Builder : MonoBehaviour
 
     private void EnableMetroGeneration()
     {
+        CreateNewBuilding(_nextBuilding, false);
+
         _trigger.Triggered -= Regenerate;
 
-        if (_pool.Last().IsCanConnectToVehicle == false) CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
+        //if (_pool.Last().IsCanConnectToVehicle == false) CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
         if (Portal.IsWaitingForSecondPortal) CreateNewBuilding(_startBuilding, false);
 
         if( _currentIdentityName != _vehicle.name )
@@ -264,7 +267,7 @@ public class Builder : MonoBehaviour
         _trigger.Triggered += Regenerate;
 
         CreateNewBuilding( _vehicle, false, fromZ );
-        CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
+        CreateNewBuilding(PickRandomBuilding(RoadLine.Venus , true, _vehicle), false);
 
         Fog.Instance.gameObject.SetActive(true);
 
@@ -272,15 +275,40 @@ public class Builder : MonoBehaviour
     }
 
 
-    private IEnumerator MetroLoop()
+    public void EnableCurveGeneration()
     {
-        yield return new WaitForSeconds(60);
+        _trigger.Triggered -= Regenerate;
+
+        if (_pool.Last().IsCanConnectToVehicle == false) CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
+        if (Portal.IsWaitingForSecondPortal) CreateNewBuilding(_startBuilding, false);
+
+        _curver.Spawn(_pool.Last().EndPoint.position.z + _buildingWidth, DisableCurveGeneration, _decoEndPoint);
+    }
+
+
+    public void DisableCurveGeneration(float fromZ)
+    {
+        _trigger.Triggered += Regenerate;
+
+        CreateNewBuilding(PickRandomBuilding(RoadLine.Venus, true, _vehicle), false, fromZ);
+
+        Fog.Instance.gameObject.SetActive(true);
+    }
+
+
+    private IEnumerator ErLoop()
+    {
+        yield return new WaitForSeconds(1);
 
         while(Game.IsActive)
         {
+            EnableCurveGeneration();
+
+            yield return new WaitForSeconds(20);
+
             EnableMetroGeneration();
 
-            yield return new WaitForSeconds(120);
+            yield return new WaitForSeconds(20);
         }
     }
 

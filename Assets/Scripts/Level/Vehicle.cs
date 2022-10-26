@@ -34,18 +34,9 @@ public class Vehicle : Building
     }
 
 
-    private void Update()
+    protected override void Update()
     {
         _body.localPosition += (_isLeft? Vector3.right : Vector3.left) * Player.Movement.walkSpeed * Game.Difficulty * _moveIntensive * Time.deltaTime;
-    }
-
-
-    private void OnTriggerEnter(Collider collision)
-    {
-        if (collision.transform.TryGetComponent<Player>(out var player))
-        {
-            _animator.Play("Vehicle_Bounce");
-        }
     }
 
 

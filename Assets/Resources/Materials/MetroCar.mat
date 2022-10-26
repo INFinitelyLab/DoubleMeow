@@ -39,7 +39,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 6
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -65,7 +65,15 @@ Material:
         m_Texture: {fileID: 2800000, guid: dffef66376be4fa480fb02b19edbe903, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _CutOccGlo:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -85,6 +93,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 0a3caa5fb5e0e0d438c74104180174fa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _EmissionColorMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 2800000, guid: 0a3caa5fb5e0e0d438c74104180174fa, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -94,10 +106,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Emmision:
-        m_Texture: {fileID: 2800000, guid: 2db92ff5b777cb1469207dfe32a40f3f, type: 3}
+        m_Texture: {fileID: 2800000, guid: a3b9ef31719ed9c418711df2f2801a06, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Gloss:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlsSmcParBus:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -130,7 +146,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 99b928f24c90b034a901bd3c3deb725f, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCapTex:
@@ -146,7 +162,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Normal:
-        m_Texture: {fileID: 2800000, guid: 5c092d63fc73f1441b04eeb89e98ea09, type: 3}
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalTex:
@@ -205,21 +225,26 @@ Material:
     m_Floats:
     - Vector1_A1626516: 80
     - _AlphaClip: 0
+    - _AmbiencePower: 1
     - _AmbientBrightness: 1
     - _Anime: 0
     - _AnimeSoftness: 0.01
     - _AnimeThreshold1: 0.45
     - _AnimeThreshold2: 0.85
+    - _AtlasHeight: 2048
+    - _AtlasWidth: 2048
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BlendOp: 0
     - _Brightness: 1
+    - _BumpMapMax: 1
     - _BumpScale: 1
     - _CastShadows: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _ColorToggle: 0
     - _Contrast: 1
     - _Cull: 2
     - _Curvature: 0.015
@@ -227,21 +252,27 @@ Material:
     - _Cutoff: 0.5
     - _Cutout: 0
     - _DestBlend: 10
+    - _Detail: 0
     - _DetailAlbedoMapScale: 1
     - _DetailBlend: 2
     - _DetailBrightness: 1
     - _DetailContrast: 1
     - _DetailLighting: 0
     - _DetailNormalMapScale: 1
+    - _DetailStrength: 1
     - _DetailUV: 0
     - _DetailVertexColors: 0
     - _Diffuse: 1
     - _DiffuseBrightness: 1
     - _DiffuseContrast: 1
     - _DiffusePerPixel: 0
+    - _DiffusePower: 1
     - _DiffuseWrap: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _Emission: 0
+    - _EmissionScale: 1
+    - _EmissionStrength: 1
     - _Emmision_Intensive: 1
     - _Enable_AO: 0
     - _EnvironmentReflections: 1
@@ -260,7 +291,7 @@ Material:
     - _HeightColorsThickness: 0
     - _IgnoreMainTexAlpha: 0
     - _IsEmmision: 1
-    - _IsNormal: 1
+    - _IsNormal: 0
     - _IsSpecgloss: 1
     - _Layer1Alpha: 1
     - _Layer1Blend: 0
@@ -277,14 +308,17 @@ Material:
     - _LightmapBrightness: 1
     - _LightmapHDR: 0
     - _LightmapUV: 0
+    - _Mask: 0
     - _MatCapBlend: 0
     - _MatCapBrightness: 1
     - _MatCapContrast: 1
     - _MatCapPerspective: 1
     - _MatCapStatic: 0
+    - _MaxMipLevel: 3
     - _Metallic: 0
     - _Metallic_Intensive: 1
     - _Mode: 0
+    - _Normal: 0
     - _NormalStrength: 1
     - _NormalUV: 0
     - _Normal_Intensive: 1
@@ -298,6 +332,7 @@ Material:
     - _Outline: 0
     - _OutlineWidth: 0.002
     - _Parallax: 0.02
+    - _Phong: 0
     - _Plant: 0
     - _PlantBaseHeight: 0
     - _PlantPhaseVariation: 0.3
@@ -330,6 +365,7 @@ Material:
     - _SpecularBrightness: 1
     - _SpecularHair: 0
     - _SpecularHighlights: 1
+    - _SpecularPower: 1
     - _SpecularSmoothness: 20
     - _SpecularUV: 0
     - _Specularess: 0.078125
@@ -357,7 +393,7 @@ Material:
     - _CurvatureDirection: {r: 0.003, g: 0, b: 0, a: 0}
     - _Curve_Direction: {r: -0.0067, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}
     - _HeightColorsColor: {r: 1, g: 1, b: 1, a: 1}
     - _Layer1Color: {r: 1, g: 1, b: 1, a: 1}
@@ -367,6 +403,8 @@ Material:
     - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapRot: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _PointLightColor: {r: 1, g: 1, b: 1, a: 1}
+    - _PointLightPosition: {r: 0, g: 0, b: 0, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimDirection: {r: 0, g: 0, b: 0, a: 0}
     - _ShadowColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}

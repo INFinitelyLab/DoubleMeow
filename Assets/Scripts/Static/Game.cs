@@ -6,6 +6,7 @@ using System;
 public sealed class Game : SingleBehaviour<Game>
 {
     [SerializeField] private float _levelHeight;
+    [SerializeField] private GameObject _postProcessInstance;
 
     public static float levelHeight => Instance._levelHeight;
     public static float Difficulty { get; private set; } = 1;
@@ -21,6 +22,7 @@ public sealed class Game : SingleBehaviour<Game>
         Achievements.Initialize();
         Skin.Initialize();
 
+        if (IsActive == true) Stop();
         if (IsActive == false) Launch();
     }
 
@@ -40,6 +42,13 @@ public sealed class Game : SingleBehaviour<Game>
         if (direction == Direction.Down) Player.Movement.Land();
     }
 
+
+    private void OnDraged(float axis)
+    {
+        Player.Movement.Drag(axis);
+    }
+
+
     // Цикл игры
 
     public static void Launch()
@@ -53,9 +62,13 @@ public sealed class Game : SingleBehaviour<Game>
         Difficulty = 1;
 
         Inputer.Swiped += Instance.OnSwiped;
+        Inputer.Draged += Instance.OnDraged;
+
         Mode.DisableAllModes();
 
         Stats.Load();
+
+        Instance._postProcessInstance.SetActive( Stats.IsEnablePostProcess );
 
         _acceleration = Instance.StartCoroutine( SpeedUp() );
     }
@@ -65,6 +78,7 @@ public sealed class Game : SingleBehaviour<Game>
         if (IsActive == false) throw new Exception("Нельзя остановить игру, игра уже остановлена");
 
         Inputer.Swiped -= Instance.OnSwiped;
+        Inputer.Draged -= Instance.OnDraged;
 
         IsActive = false;
 
@@ -76,8 +90,13 @@ public sealed class Game : SingleBehaviour<Game>
 
     public static void Restart()
     {
-        if(IsActive) Game.Stop();
+        if(IsActive) Stop();
 
+        SceneManager.LoadScene(1);
+    }
+
+    public static void Menu()
+    {
         SceneManager.LoadScene(0);
     }
 
@@ -85,7 +104,7 @@ public sealed class Game : SingleBehaviour<Game>
     {
         while(IsActive)
         {
-            Difficulty = Mathf.MoveTowards( Difficulty, 2, 0.1f );
+            Difficulty = Mathf.MoveTowards( Difficulty, 2, 0.05f );
 
             yield return new WaitForSeconds(10);
         }
@@ -97,7 +116,7 @@ public sealed class Game : SingleBehaviour<Game>
     {
 
 
-        // Mario Mode
+        // Mario Card Mode
 
         public static bool InVehicleMode { get; private set; }
 
@@ -119,6 +138,29 @@ public sealed class Game : SingleBehaviour<Game>
 
             Player.Movement.DisableVehicleControl();
             Player.Presenter.DisableVehicleMode();
+        }
+
+
+        // Curve Mode
+
+        public static bool InCurveMode { get; private set; }
+
+        public static void EnableCurveMode()
+        {
+            if (InCurveMode == true) return;
+
+            InCurveMode = true;
+
+            Player.Movement.EnableCurveControl();
+        }
+
+        public static void DisableCurveMode()
+        {
+            if (InCurveMode == false) return;
+
+            InCurveMode = false;
+
+            Player.Movement.DisableCurveControl();
         }
 
 
@@ -179,6 +221,7 @@ public sealed class Game : SingleBehaviour<Game>
             DisableVehicleMode();
             DisableDoubleMode();
             DisableMagnetMode();
+            DisableCurveMode();
         }
 
         private static System.Collections.IEnumerator InvokeDelay(float duration, Action invokable)

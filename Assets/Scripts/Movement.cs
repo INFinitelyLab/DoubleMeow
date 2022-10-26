@@ -9,9 +9,12 @@ public class Movement : MonoBehaviour
     [SerializeField] private float _gravityScale;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _roadWidth;
+    [SerializeField] private float _curveAroundHeight;
     [SerializeField] private GroundChecker _grounder;
 
     private bool _isVehicleControl;
+    private bool _isCurveControl;
+    private bool _isNeedToEnableCurveControl;
     private bool _inPortal;
 
     private RoadLine _line;
@@ -42,7 +45,7 @@ public class Movement : MonoBehaviour
     {
         if (Game.IsActive == false || _inPortal) return false;
 
-        if (_isVehicleControl == true)
+        if (_isVehicleControl == true || _isCurveControl)
             return false;
 
         if ( _grounder.IsGrounded && _velocity.y <= 0)
@@ -64,7 +67,7 @@ public class Movement : MonoBehaviour
     {
         if (Game.IsActive == false || _inPortal) return;
 
-        if (_isVehicleControl == true)
+        if (_isVehicleControl == true || _isCurveControl)
             throw new Exception("Нельзя опускаться будучи в машине");
 
         if (_grounder.IsGrounded == false)
@@ -76,7 +79,7 @@ public class Movement : MonoBehaviour
 
     public void Surf(Direction direction)
     {
-        if (Game.IsActive == false || _inPortal) return;
+        if (Game.IsActive == false || _inPortal || _isCurveControl) return;
 
         if (direction.IsVertical())
             throw new Exception("Нельзя скользить по вертикали");
@@ -96,11 +99,19 @@ public class Movement : MonoBehaviour
     }
 
 
+    public void Drag(float axis)
+    {
+        if (_isCurveControl == false) return;
+
+        _targetPosition.x = axis * 1.5f;
+    }
+
+
     private void Update()
     {
         bool grounded = _controller.isGrounded;
 
-        if (Game.Mode.InVehicleMode == false && _inPortal == false)
+        if (_isVehicleControl == false && _isCurveControl == false && _inPortal == false)
         {
             if (_controller.isGrounded == false || _velocity.y > 0)
             {
@@ -118,6 +129,12 @@ public class Movement : MonoBehaviour
 
         if (Game.IsActive)
         {
+            if (_isCurveControl)
+            {
+                _velocity.y = (1f - _transform.position.y + (-Mathf.Cos(_transform.position.x / 1.05f) * _curveAroundHeight)) / Time.deltaTime;
+                Player.Presenter.OnRedraged( transform.position.y * 60f * (_transform.position.x > 0? 1 : -1));
+            }
+
             _velocity.x = (_targetPosition.x - _transform.position.x) * _surfSpeed;
             _velocity.z = Mathf.Lerp(_velocity.z, _walkSpeed * Game.Difficulty, 10 * Time.deltaTime);
         }
@@ -129,6 +146,13 @@ public class Movement : MonoBehaviour
 
         _controller.Move( _velocity * Time.deltaTime);
 
+        if (_isNeedToEnableCurveControl)
+            if (_transform.position.y < 1 - (Mathf.Cos(_transform.position.x / 1.05f) * _curveAroundHeight))
+            {
+                _isNeedToEnableCurveControl = false;
+                _isCurveControl = true;
+            }
+
         if (_controller.velocity.z <= 0 && _transform.position.z > 3 && _velocity.z > 0)
         {
             Player.Detector.Bump();
@@ -138,7 +162,7 @@ public class Movement : MonoBehaviour
 
         if (grounded != _controller.isGrounded) Grounded?.Invoke(_controller.isGrounded);
 
-        _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.deltaTime);
+        if (_isCurveControl == false) _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.deltaTime);
     }
 
 
@@ -191,9 +215,29 @@ public class Movement : MonoBehaviour
 
         _line = (RoadLine)( _targetPosition.x / _roadWidth);
         _targetPosition.x = _line.ToInt() * _roadWidth;
-        _velocity.y = 8f;
+        _velocity.z = 30 * Game.Difficulty;
+        _velocity.y = 6.7f;
+
+        Player.Presenter.OnJump();
 
         _walkSpeed /= 2f;
+    }
+
+
+    public void EnableCurveControl()
+    {
+        _isNeedToEnableCurveControl = true;
+
+        Player.Presenter.EnableCurveMode();
+    }
+
+    public void DisableCurveControl()
+    {
+        _isCurveControl = false;
+
+        _velocity.y = 6f;
+
+        Player.Presenter.OnJump();
     }
 
 
@@ -203,9 +247,7 @@ public class Movement : MonoBehaviour
 
         _newLine = (RoadLine)(int)Mathf.Round(exitPortalPosition.x);
 
-        //Invoke("_ChangeLineTo", 0.3f / Game.Difficulty);
-
-        _line = _newLine;
+        Invoke("_ChangeLineTo", 0.3f / Game.Difficulty);
 
         _walkSpeed *= 3f;
 
@@ -245,5 +287,11 @@ public class Movement : MonoBehaviour
 
             yield return new WaitForFixedUpdate();
         }
+    }
+
+
+    private void _ChangeLineTo()
+    {
+        _line = _newLine;
     }
 }

@@ -6,6 +6,8 @@ public class Double : Pickup
 
     public static bool IsAlreadyExist;
 
+    private Transform _transform;
+
 
     protected override void OnPickup()
     {
@@ -13,7 +15,18 @@ public class Double : Pickup
     }
 
 
-    private void Awake() => IsAlreadyExist = true;
+    private void Awake()
+    {
+        IsAlreadyExist = true;
+
+        _transform = transform;
+    }
 
     private void OnDisable() => IsAlreadyExist = false;
+
+
+    private void Update()
+    {
+        _transform.localRotation *= Quaternion.Euler(0f, Time.deltaTime * 360, 0f);
+    }
 }

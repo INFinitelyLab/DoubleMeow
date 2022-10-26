@@ -12,7 +12,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _RECEIVE_SHADOWS_OFF
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -28,14 +29,18 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 8824163347257e9418ad776191ede5e3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0671f7696c4ef4e4fa89af7ab94a7c42, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
-        m_Texture: {fileID: 2800000, guid: 3bcd7163321c58c44973c9a9d7a72a22, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ClearCoatMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CutOccGlo:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -63,8 +68,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: 7e1bedcde65689d4f8709962afb95841, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _EmissionColorMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
-        m_Texture: {fileID: 2800000, guid: a67e9d6c73e1fd041b86d39dae2c486c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7e1bedcde65689d4f8709962afb95841, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissiveTex:
@@ -72,10 +81,18 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Emmision:
-        m_Texture: {fileID: 2800000, guid: 54a42d16a481b5044b346f03a6c62764, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7e1bedcde65689d4f8709962afb95841, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmmisionMap:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Gloss:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlsSmcParBus:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -104,7 +121,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MSA:
-        m_Texture: {fileID: 2800000, guid: bb473570c8665ed4d80b4e9fb96b6d42, type: 3}
+        m_Texture: {fileID: 2800000, guid: a8a707b658996f24d84698fd8dc0a4ae, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -193,12 +210,15 @@ Material:
     - _AnimeSoftness: 0.01
     - _AnimeThreshold1: 0.45
     - _AnimeThreshold2: 0.85
+    - _AtlasHeight: 2048
+    - _AtlasWidth: 2048
     - _BendFallOff: 3.74
     - _BendFallOffStr: 5.62
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BlendOp: 0
     - _Brightness: 2
+    - _BumpMapMax: 1
     - _BumpScale: 1
     - _CastShadows: 1
     - _ClearCoat: 0
@@ -206,7 +226,7 @@ Material:
     - _ClearCoatSmoothness: 0
     - _ColorToggle: 0
     - _Contrast: 1
-    - _Cull: 2
+    - _Cull: 0
     - _Curvature: 0.015
     - _Cutoff: 0.5
     - _Cutout: 0
@@ -232,6 +252,7 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _Emission: 1
+    - _EmissionScale: 1
     - _EmissionStrength: 2.24
     - _Enable_AO: 0
     - _EnvironmentReflections: 1
@@ -251,7 +272,7 @@ Material:
     - _HeightColorsThickness: 0
     - _IgnoreMainTexAlpha: 0
     - _IsEmmision: 1
-    - _IsNormal: 1
+    - _IsNormal: 0
     - _IsSpecgloss: 1
     - _Layer1Alpha: 1
     - _Layer1Blend: 0
@@ -274,6 +295,7 @@ Material:
     - _MatCapContrast: 1
     - _MatCapPerspective: 1
     - _MatCapStatic: 0
+    - _MaxMipLevel: 3
     - _Metallic: 0
     - _Mode: 0
     - _Normal: 1
@@ -313,7 +335,7 @@ Material:
     - _ShadowOverlaySwayAmount: 0.01
     - _ShadowsEnabled: 1
     - _Shininess: 1
-    - _Smoothness: 0.5
+    - _Smoothness: 1
     - _SmoothnessSource: 0
     - _SmoothnessTextureChannel: 0
     - _SourceBlend: 5
@@ -339,7 +361,7 @@ Material:
     - _VertexColorContrast: 1
     - _VertexColors: 0
     - _VertexColorsContrast: 1
-    - _WorkflowMode: 0
+    - _WorkflowMode: 1
     - _ZOffset: 0
     - _ZTest: 4
     - _ZWrite: 1
@@ -357,7 +379,7 @@ Material:
     - _CurvatureTest: {r: 0, g: 0, b: 0, a: 0}
     - _Curve_Direction: {r: 0, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 0}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}
     - _HeightColorsColor: {r: 1, g: 1, b: 1, a: 1}
     - _Layer1Color: {r: 1, g: 1, b: 1, a: 1}

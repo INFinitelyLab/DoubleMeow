@@ -11,8 +11,6 @@ GameObject:
   - component: {fileID: 2686957447059803679}
   - component: {fileID: -7040210138820643659}
   - component: {fileID: 2063749549459268267}
-  - component: {fileID: 3297900956821367512}
-  - component: {fileID: 2735792833249310974}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Untagged
@@ -61,9 +59,10 @@ MonoBehaviour:
     000
 
     000'
-  _maxIdentityCount: 5
+  _maxIdentityCount: 3
+  _isPortalFriendly: 0
   _body: {fileID: 3177338843196844552}
-  _animator: {fileID: 3297900956821367512}
+  _animator: {fileID: 0}
   _moveIntensive: 0.3
 --- !u!65 &2063749549459268267
 BoxCollider:
@@ -78,39 +77,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2, y: 0.5, z: 1}
   m_Center: {x: 0, y: -0.35, z: 0.5}
---- !u!95 &3297900956821367512
-Animator:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2686957447059803674}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c926be2c79344aa46b72b2878868c509, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
---- !u!65 &2735792833249310974
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2686957447059803674}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 2, y: 0.1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0.5}
 --- !u!1 &2686957447356258151
 GameObject:
   m_ObjectHideFlags: 0

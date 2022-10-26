@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 [RequireComponent(typeof(Collider))]
 public class Unbuilder : MonoBehaviour
 {
@@ -7,7 +8,7 @@ public class Unbuilder : MonoBehaviour
     {
         if( other.transform.TryGetComponent<Building>(out var building) || other.transform.TryGetComponent<DecorationBuilding>(out var decor) )
         {
-            Destroy(other.gameObject);
+            Destroy(other.transform.gameObject);
         }
         else if ( other.gameObject.CompareTag("Vehicle"))
         {

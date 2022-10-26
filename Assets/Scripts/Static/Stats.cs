@@ -6,8 +6,22 @@ public static class Stats
     public static SecureInt Coins { get; private set; } = new SecureInt(0,"Coins");
     public static SecureInt Level { get; private set; } = new SecureInt(0,"Level");
 
-    public static int DeathCount { get; private set; }
     public static int PerfectJumpCount { get; private set; }
+    public static int DeathCount { get; private set; }
+
+    public static bool IsEnablePostProcess { get; set; }
+    public static int TargetFPS
+    {
+        get
+        {
+            return Application.targetFrameRate;
+        }
+
+        set
+        {
+            Application.targetFrameRate = value;
+        }
+    }
 
     private static SecureInt _levelCoins;
 
@@ -95,6 +109,9 @@ public static class Stats
         PlayerPrefsExtentions.SetSecure( LevelCoinsSaveKey, _levelCoins);
 
         PlayerPrefs.SetInt("Death", DeathCount);
+
+        PlayerPrefs.SetInt("TargetFPS", TargetFPS);
+        PlayerPrefs.SetInt("IsEnablePostProcess", IsEnablePostProcess? 1 : 0);
     }
 
 
@@ -105,5 +122,8 @@ public static class Stats
         _levelCoins = PlayerPrefsExtentions.GetSecure( LevelCoinsSaveKey, "LevelCoins" );
 
         DeathCount = PlayerPrefs.GetInt("Death");
+
+        TargetFPS = PlayerPrefs.GetInt("TargetFPS");
+        IsEnablePostProcess = PlayerPrefs.GetInt("IsEnablePostProcess") == 1;
     }
 }
