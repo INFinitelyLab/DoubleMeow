@@ -15,7 +15,9 @@ public class Milk : Pickup
 
     protected override void OnPickup()
     {
-        Stats.IncreaseCoin( Game.Mode.InDoubleMode? 2 : 1 );        
+        //Stats.IncreaseCoin( Game.Mode.InDoubleMode? 2 : 1 );
+
+        ParticleManager.Play( "MilkFlash", _transform.position + Vector3.forward * 0.3f);
 
         Achievements.Unlock("1234");
     }

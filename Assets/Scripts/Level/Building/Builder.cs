@@ -28,20 +28,18 @@ public class Builder : MonoBehaviour
 
     private string _currentIdentityName;
     private float _decoEndPoint;
-    private float _totalVehicleWidth;
 
-    private float _spawnPositionZ;
+    private float _totalVehicleWidth;
 
     private int _currentIdentityCount;
 
     private Building _pastBuilding;
-    private Building _nextBuilding;
+    private bool _nextBuildingIsVehicle;
     private Building _currentBuilding;
 
     private Transform _player;
 
     private RoadLine _endLine = RoadLine.Venus;
-    private RoadLine _nextEndLine = RoadLine.Venus;
 
     private List<Building> _pool = new List<Building>();
 
@@ -50,9 +48,12 @@ public class Builder : MonoBehaviour
     {
         _player = Player.Movement.transform;
 
-        _nextBuilding = _startBuilding;
+        _currentBuilding = _startBuilding;
+        _nextBuildingIsVehicle = false;
 
         GenerateFor(_startCount, true);
+
+        //EnableCurveGeneration();
 
         Regenerate(false);
 
@@ -79,14 +80,13 @@ public class Builder : MonoBehaviour
         float currentPlayerPosition = Player.Movement.transform.position.z;
         float lastBuildingPosition = _pool.Last().transform.position.z;
 
-        while ( currentPlayerPosition + _distanceForDecoBuildings > lastBuildingPosition )
+        while ( currentPlayerPosition + _distanceForDecoBuildings - _totalVehicleWidth > lastBuildingPosition )
         {
             _pastBuilding = _currentBuilding;
-            _currentBuilding = Portal.IsWaitingForSecondPortal? _startBuilding : _nextBuilding;
-    
-            _nextEndLine = _currentBuilding.EndLines.ToRoadLine().Random();
+            _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? _vehicle : PickRandomBuilding(_endLine, _nextBuildingIsVehicle, _vehicle));
 
-            _nextBuilding = PickRandomBuilding(_nextEndLine , _currentBuilding == _vehicle, _currentBuilding.IsCanConnectToVehicle? null : _vehicle);
+            _nextBuildingIsVehicle = GetVehicleIfRandom();
+
 
             if(Portal.IsWaitingForSecondPortal)
                 CreateNewBuilding(_currentBuilding, isStartTile, _pool.Last().EndPoint.transform.position.z + (3 * Game.Difficulty));
@@ -107,11 +107,9 @@ public class Builder : MonoBehaviour
         for( int index = 0; index < count; index++ )
         {
             _pastBuilding = _currentBuilding;
-            _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : _nextBuilding;
+            _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? _vehicle : PickRandomBuilding(_endLine, _currentBuilding == _vehicle, _currentBuilding.IsCanConnectToVehicle ? null : _vehicle));
 
-            _nextEndLine = _currentBuilding.EndLines.ToRoadLine().Random();
-
-            _nextBuilding = PickRandomBuilding(_nextEndLine, _currentBuilding == _vehicle, _currentBuilding.IsCanConnectToVehicle ? null : _vehicle);
+            _nextBuildingIsVehicle = GetVehicleIfRandom();
 
             if (Portal.IsWaitingForSecondPortal)
                 CreateNewBuilding(_currentBuilding, isStartBuilding, _pool.Last().EndPoint.transform.position.z + (3 * Game.Difficulty));
@@ -130,7 +128,7 @@ public class Builder : MonoBehaviour
 
         if (isStartBuilding == false && origin != _vehicle)
         {
-            _endLine = _obstacler.Generate(building, _endLine, _nextEndLine);
+            _endLine = _obstacler.Generate(building, _endLine);
         }
 
         if (_pool.Count > 0)
@@ -154,7 +152,7 @@ public class Builder : MonoBehaviour
 
         if (origin != _vehicle)
         {
-            _decoEndPoint = Building.PlaceDecorations(_decoEndPoint, building.transform.position.z , building.EndPoint.localPosition.z, _decoPrefabs, (_pastBuilding == _vehicle ? 2 : 0) + (_nextBuilding == _vehicle ? 1 : 0));
+            _decoEndPoint = Building.PlaceDecorations(_decoEndPoint, building.transform.position.z , building.EndPoint.localPosition.z, _decoPrefabs, (_pastBuilding == _vehicle ? 2 : 0) + (_nextBuildingIsVehicle? 1 : 0));
 
             _totalVehicleWidth = 0;
         }
@@ -189,27 +187,7 @@ public class Builder : MonoBehaviour
         {
             List<Building> localPool = new List<Building>();
 
-            if (_pool.Last().IsCanConnectToVehicle == true && Random.Range(0, 3) == 1 && except != _vehicle && except2 != _vehicle)
-            {
-                if (_currentIdentityName == _vehicle.name)
-                {
-                    _currentIdentityCount++;
-
-                    if (_currentIdentityCount >= _vehicle.MaxIdentityCount) 
-                        _currentIdentityCount = 0;
-                    else 
-                        return _vehicle;
-                }
-                else
-                {
-                    _currentIdentityName = _vehicle.name;
-                    _currentIdentityCount = 0;
-
-                    return _vehicle;
-                }
-            }
-
-            List<RoadLine> endLines = _nextBuilding.StartLines.ToRoadLine();
+            //List<RoadLine> endLines = _nextBuilding.StartLines.ToRoadLine();
 
             foreach( Building building in _prefabs )
             {
@@ -234,9 +212,38 @@ public class Builder : MonoBehaviour
     }
 
 
+    private bool GetVehicleIfRandom()
+    {
+        if (_pool.Count == 0 || Portal.IsWaitingForSecondPortal)
+            return false;
+
+        if (_pool.Last().IsCanConnectToVehicle == true && Random.Range(0, 3) == 1)
+        {
+            if (_currentIdentityName == _vehicle.name)
+            {
+                _currentIdentityCount++;
+
+                if (_currentIdentityCount >= _vehicle.MaxIdentityCount)
+                    _currentIdentityCount = 0;
+                else
+                    return true;
+            }
+            else
+            {
+                _currentIdentityName = _vehicle.name;
+                _currentIdentityCount = 0;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
     private void EnableMetroGeneration()
     {
-        CreateNewBuilding(_nextBuilding, false);
+        //CreateNewBuilding(_nextBuilding, false);
 
         _trigger.Triggered -= Regenerate;
 
@@ -266,6 +273,8 @@ public class Builder : MonoBehaviour
     {
         _trigger.Triggered += Regenerate;
 
+        _endLine = RoadLine.Venus;
+
         CreateNewBuilding( _vehicle, false, fromZ );
         CreateNewBuilding(PickRandomBuilding(RoadLine.Venus , true, _vehicle), false);
 
@@ -279,16 +288,18 @@ public class Builder : MonoBehaviour
     {
         _trigger.Triggered -= Regenerate;
 
-        if (_pool.Last().IsCanConnectToVehicle == false) CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
+        if (_nextBuildingIsVehicle) CreateNewBuilding(_vehicle, false);
         if (Portal.IsWaitingForSecondPortal) CreateNewBuilding(_startBuilding, false);
 
-        _curver.Spawn(_pool.Last().EndPoint.position.z + _buildingWidth, DisableCurveGeneration, _decoEndPoint);
+        _curver.Spawn(_pool.Last().EndPoint.position.z + _buildingWidth, DisableCurveGeneration, _decoEndPoint, _nextBuildingIsVehicle);
     }
 
 
     public void DisableCurveGeneration(float fromZ)
     {
         _trigger.Triggered += Regenerate;
+
+        _endLine = RoadLine.Venus;
 
         CreateNewBuilding(PickRandomBuilding(RoadLine.Venus, true, _vehicle), false, fromZ);
 
@@ -298,17 +309,17 @@ public class Builder : MonoBehaviour
 
     private IEnumerator ErLoop()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(60);
 
         while(Game.IsActive)
         {
             EnableCurveGeneration();
 
-            yield return new WaitForSeconds(20);
+            yield return new WaitForSeconds(60);
 
             EnableMetroGeneration();
 
-            yield return new WaitForSeconds(20);
+            yield return new WaitForSeconds(60);
         }
     }
 

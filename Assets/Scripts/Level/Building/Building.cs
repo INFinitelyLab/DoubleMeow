@@ -33,9 +33,9 @@ public class Building : MonoBehaviour, IGroundeable
     private static Vector2 DecorationBulidingMinMaxDistance = new Vector2( 1f, 1.5f );
 
 
-    public int GetTileDifficulty(Vector2Int position)
+    public int GetTileID(Vector2Int position)
     {
-        if (position.x < 0 || position.y < 0 || position.x > 2 || position.y > _tileLines.Length-1)
+        if (position.x < 0 || position.y < 0 || position.x > GetSize().x || position.y > GetSize().y)
             return 0;
 
         string line = _tileLines[position.y];
@@ -46,7 +46,9 @@ public class Building : MonoBehaviour, IGroundeable
 
     public Vector2Int GetSize()
     {
-        return new Vector2Int(3, _tileIDs.Split("\n").Length);
+        if( _tileLines == null) _tileLines = _tileIDs.Split("\n");
+
+        return new Vector2Int(_tileIDs.Split("\n")[0].Length, _tileIDs.Split("\n").Length);
     }
 
 

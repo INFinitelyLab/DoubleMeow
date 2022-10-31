@@ -10,8 +10,12 @@ public class Vehicle : Building
 
     private bool _isLeft = false;
 
+    private Vector3 _offset = new Vector3(0f, -0.5f, 0.5f);
+
     private Movement _player;
 
+    private Transform _playerTransform;
+    private Transform _transform2;
 
     private void Start()
     {
@@ -24,6 +28,8 @@ public class Vehicle : Building
         }
 
         _player = Player.Movement;
+        _playerTransform = _player.transform;
+        _transform2 = transform;
 
         Vector3 position = _body.localPosition;
 
@@ -34,9 +40,15 @@ public class Vehicle : Building
     }
 
 
+    protected void LateUpdate()
+    {
+        _body.localPosition = ((_isLeft ? Vector3.right : Vector3.left) * (_playerTransform.position.z - _transform2.position.z)) * _moveIntensive + _offset;
+    }
+
+
     protected override void Update()
     {
-        _body.localPosition += (_isLeft? Vector3.right : Vector3.left) * Player.Movement.walkSpeed * Game.Difficulty * _moveIntensive * Time.deltaTime;
+       //
     }
 
 

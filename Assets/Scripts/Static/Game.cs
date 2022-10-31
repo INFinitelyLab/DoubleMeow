@@ -19,6 +19,10 @@ public sealed class Game : SingleBehaviour<Game>
 
     protected override void OnActive()
     {
+        Stats.Load();
+
+        Instance._postProcessInstance.SetActive( Stats.TargetGraphics == GraphicPreset.High );
+
         Achievements.Initialize();
         Skin.Initialize();
 
@@ -67,8 +71,6 @@ public sealed class Game : SingleBehaviour<Game>
         Mode.DisableAllModes();
 
         Stats.Load();
-
-        Instance._postProcessInstance.SetActive( Stats.IsEnablePostProcess );
 
         _acceleration = Instance.StartCoroutine( SpeedUp() );
     }

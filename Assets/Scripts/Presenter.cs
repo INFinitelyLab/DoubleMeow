@@ -50,7 +50,13 @@ public class Presenter : MonoBehaviour
 
     public void EnableCurveMode()
     {
-        _animator.SetTrigger("Belly");
+        _animator.SetBool("Belly", true);
+    }
+
+
+    public void DisableCurveMode()
+    {
+        _animator.SetBool("Belly", false);
     }
 
 
@@ -115,6 +121,8 @@ public class Presenter : MonoBehaviour
 
     public void Update()
     {
+        if (Game.IsActive == false) return;
+            
         _transform.localRotation = Quaternion.Lerp( _transform.localRotation, _targetRotation, _moveSpeed * _bendSmoothTime * Time.deltaTime );
         _targetRotation = Quaternion.Lerp( _targetRotation, Quaternion.identity , _moveSpeed * _bendSmoothTime * Time.deltaTime );
 

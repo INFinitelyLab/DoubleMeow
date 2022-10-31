@@ -76,6 +76,18 @@ MonoBehaviour:
 
     222
 
+    222
+
+    222
+
+    222
+
+    222
+
+    222
+
+    222
+
     222'
   _maxIdentityCount: 2
   _isPortalFriendly: 1
@@ -163,7 +175,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5687085585882455406}
-  m_Mesh: {fileID: -1505887166496245981, guid: 41d107b256770504e8c66552d5a58cdf, type: 3}
+  m_Mesh: {fileID: 8827197408342012586, guid: 4e9010ad4417113448a16ffb3c10a2f6, type: 3}
 --- !u!23 &2758433670427307393
 MeshRenderer:
   m_ObjectHideFlags: 0

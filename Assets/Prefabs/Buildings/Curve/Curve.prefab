@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 9190504830492976837}
   - component: {fileID: 5198527150319511904}
   - component: {fileID: 8052462176743742890}
-  - component: {fileID: 7926815434678623178}
+  - component: {fileID: 7893929739249376674}
   m_Layer: 0
   m_Name: Curve
   m_TagString: Untagged
@@ -116,7 +116,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7926815434678623178
+--- !u!114 &7893929739249376674
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,16 +125,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 8412983449802767487}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fecb8cba0457dd49b84cc6cf7ca6c9f, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c1e6a99540966a44a7d071b4d3fedd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _startLines: 0
   _endLines: 0
   _pigeonPosition: {fileID: 0}
   _pigeonPrefab: {fileID: 0}
-  _endPoint: {fileID: 2432763174305149646}
+  _endPoint: {fileID: 0}
   _isNearly: 0
   _isCanConnectToVehicle: 0
   _tileIDs: 
   _maxIdentityCount: 3
   _isPortalFriendly: 0
+  _materialForLowGraphics: {fileID: 2100000, guid: 48a52cf20611fb144a2f778106997076, type: 2}
+  _renderer: {fileID: 8052462176743742890}

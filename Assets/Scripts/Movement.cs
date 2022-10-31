@@ -13,6 +13,7 @@ public class Movement : MonoBehaviour
     [SerializeField] private GroundChecker _grounder;
 
     private bool _isVehicleControl;
+    private bool _isControlled = true;
     private bool _isCurveControl;
     private bool _isNeedToEnableCurveControl;
     private bool _inPortal;
@@ -43,7 +44,7 @@ public class Movement : MonoBehaviour
 
     private bool TryJump()
     {
-        if (Game.IsActive == false || _inPortal) return false;
+        if (Game.IsActive == false || _inPortal || _isControlled == false) return false;
 
         if (_isVehicleControl == true || _isCurveControl)
             return false;
@@ -65,7 +66,7 @@ public class Movement : MonoBehaviour
 
     public void Land()
     {
-        if (Game.IsActive == false || _inPortal) return;
+        if (Game.IsActive == false || _inPortal || _isControlled == false) return;
 
         if (_isVehicleControl == true || _isCurveControl)
             throw new Exception("Нельзя опускаться будучи в машине");
@@ -79,7 +80,7 @@ public class Movement : MonoBehaviour
 
     public void Surf(Direction direction)
     {
-        if (Game.IsActive == false || _inPortal || _isCurveControl) return;
+        if (Game.IsActive == false || _inPortal || _isCurveControl || _isControlled == false) return;
 
         if (direction.IsVertical())
             throw new Exception("Нельзя скользить по вертикали");
@@ -101,7 +102,7 @@ public class Movement : MonoBehaviour
 
     public void Drag(float axis)
     {
-        if (_isCurveControl == false) return;
+        if (_isCurveControl == false || _isControlled == false) return;
 
         _targetPosition.x = axis * 1.5f;
     }
@@ -136,7 +137,10 @@ public class Movement : MonoBehaviour
             }
 
             _velocity.x = (_targetPosition.x - _transform.position.x) * _surfSpeed;
-            _velocity.z = Mathf.Lerp(_velocity.z, _walkSpeed * Game.Difficulty, 10 * Time.deltaTime);
+            if (_isControlled == true)
+                _velocity.z = Mathf.Lerp(_velocity.z, _walkSpeed * Game.Difficulty, 10 * Time.deltaTime);
+            else
+                _velocity.z = Mathf.Lerp(_velocity.z, 0, Game.Difficulty * 20 * Time.deltaTime);
         }
         else
         {
@@ -153,14 +157,22 @@ public class Movement : MonoBehaviour
                 _isCurveControl = true;
             }
 
-        if (_controller.velocity.z <= 0 && _transform.position.z > 3 && _velocity.z > 0)
+        if (_controller.velocity.z <= 0 && _transform.position.z > 3 && _velocity.z > 0 && Game.IsActive && _isControlled == true)
         {
             Player.Detector.Bump();
 
-            _velocity = new Vector3( 0, _jumpForce / 3, Game.Mode.InVehicleMode? -15f : -5f );
+            _velocity = new Vector3(0, _jumpForce / 3, Game.Mode.InVehicleMode ? -15f : -5f) / (_isControlled ? 2 : 1);
         }
 
-        if (grounded != _controller.isGrounded) Grounded?.Invoke(_controller.isGrounded);
+        if (grounded != _controller.isGrounded)
+        {
+            if (_isControlled == false && Game.IsActive)
+            {
+                Player.Detector.Bump();
+            }
+
+            Grounded?.Invoke(_controller.isGrounded);
+        }
 
         if (_isCurveControl == false) _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.deltaTime);
     }
@@ -175,19 +187,20 @@ public class Movement : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        if (hit.transform.TryGetComponent<Obstacle>(out var obctacle) == false && hit.gameObject.CompareTag("Vehicle") == false) return;
-
-        Vector3 between = Vector3.zero;
-
-        between.x = Mathf.Abs(_transform.position.x - hit.point.x);
-        between.y = Mathf.Abs(_transform.position.y - hit.point.y);
-        between.z = Mathf.Abs(_transform.position.z - hit.point.z);
-
-        if ( between.x > between.z * 1.5f && between.x > between.z * 1.5f)
+        if (hit.transform.TryGetComponent<Obstacle>(out var obctacle) || hit.gameObject.CompareTag("Vehicle"))
         {
-            Direction direction = _transform.position.x > hit.point.x ? Direction.Right : Direction.Left;
+            Vector3 between = Vector3.zero;
 
-            Surf(direction);
+            between.x = Mathf.Abs(_transform.position.x - hit.point.x);
+            between.y = Mathf.Abs(_transform.position.y - hit.point.y);
+            between.z = Mathf.Abs(_transform.position.z - hit.point.z);
+
+            if (between.x > between.z * 1.5f && between.x > between.z * 1.5f)
+            {
+                Direction direction = _transform.position.x > hit.point.x ? Direction.Right : Direction.Left;
+
+                Surf(direction);
+            }
         }
     }
 
@@ -228,14 +241,32 @@ public class Movement : MonoBehaviour
     {
         _isNeedToEnableCurveControl = true;
 
+        Grounded?.Invoke(true);
+
         Player.Presenter.EnableCurveMode();
     }
 
-    public void DisableCurveControl()
+    public void DisableCurveControl(bool isFly = true, RoadLine line = RoadLine.Venus)
     {
         _isCurveControl = false;
 
-        _velocity.y = 6f;
+        if (isFly)
+        {
+            _velocity.y = 6f - _transform.position.y;
+            
+            Player.Presenter.DisableCurveMode();
+        }
+        else
+        {
+            _velocity.z /= Game.Difficulty;
+            _velocity.x = 0;
+
+            _isControlled = false;
+        }
+
+        _line = line;
+
+        Grounded?.Invoke(false);
 
         Player.Presenter.OnJump();
     }
@@ -247,7 +278,7 @@ public class Movement : MonoBehaviour
 
         _newLine = (RoadLine)(int)Mathf.Round(exitPortalPosition.x);
 
-        Invoke("_ChangeLineTo", 0.3f / Game.Difficulty);
+        Invoke("_ChangeLineTo", 0.2f / Game.Difficulty);
 
         _walkSpeed *= 3f;
 
@@ -269,9 +300,9 @@ public class Movement : MonoBehaviour
     }
 
 
-    public void EnableAccelerate() => _walkSpeed *= 4;
+    public void EnableAccelerate() => _walkSpeed *= 2.5f;
 
-    public void DisableAccelerate() => _walkSpeed /= 4;
+    public void DisableAccelerate() => _walkSpeed /= 2.5f;
 
 
     private RoadLine _newLine;

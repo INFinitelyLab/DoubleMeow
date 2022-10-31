@@ -209,6 +209,13 @@ public enum Direction
     Down
 }
 
+public enum GraphicPreset
+{
+    Low,
+    Medium,
+    High
+}
+
 [Flags]
 public enum BuildingType : int
 {

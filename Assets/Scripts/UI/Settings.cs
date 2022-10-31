@@ -10,7 +10,7 @@ public class Settings : MonoBehaviour
     public void OnOpen()
     {
         _FPS.value = Mathf.Ceil(Stats.TargetFPS / 60);
-        _PostProcessing.value = Stats.IsEnablePostProcess ? 1 : 0;
+        _PostProcessing.value = (int)Stats.TargetGraphics;
     }
 
 
@@ -27,7 +27,7 @@ public class Settings : MonoBehaviour
 
     public void SetGraphicsPreset(float value)
     {
-        Stats.IsEnablePostProcess = value == 1;
+        Stats.TargetGraphics = (GraphicPreset)value;
     }
 
 

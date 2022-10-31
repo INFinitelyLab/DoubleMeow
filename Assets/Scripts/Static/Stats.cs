@@ -9,7 +9,7 @@ public static class Stats
     public static int PerfectJumpCount { get; private set; }
     public static int DeathCount { get; private set; }
 
-    public static bool IsEnablePostProcess { get; set; }
+    public static GraphicPreset TargetGraphics { get; set; }
     public static int TargetFPS
     {
         get
@@ -111,7 +111,7 @@ public static class Stats
         PlayerPrefs.SetInt("Death", DeathCount);
 
         PlayerPrefs.SetInt("TargetFPS", TargetFPS);
-        PlayerPrefs.SetInt("IsEnablePostProcess", IsEnablePostProcess? 1 : 0);
+        PlayerPrefs.SetInt("TargetGraphic", (int)TargetGraphics);
     }
 
 
@@ -124,6 +124,6 @@ public static class Stats
         DeathCount = PlayerPrefs.GetInt("Death");
 
         TargetFPS = PlayerPrefs.GetInt("TargetFPS");
-        IsEnablePostProcess = PlayerPrefs.GetInt("IsEnablePostProcess") == 1;
+        TargetGraphics = (GraphicPreset)PlayerPrefs.GetInt("TargetGraphic");
     }
 }

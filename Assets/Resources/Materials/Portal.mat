@@ -25,14 +25,11 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _ALPHAPREMULTIPLY_ON
-  - _RECEIVE_SHADOWS_OFF
-  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords: []
   m_LightmapFlags: 6
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -96,7 +93,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: ff329dde76e42dd4a828003449d7a404, type: 3}
+        m_Texture: {fileID: 2800000, guid: daac46971fd8bdb41a49decab80221f3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:

@@ -71,7 +71,6 @@ public sealed class Inputer : SingleBehaviour<Inputer>
     private static class Swiper
     {
         private static Resolution _screenResolution;
-        private static Vector2 _lastPressedPosition;
         private static Vector2 _lastPressedPosition2;
         private static Vector2 _pressedPosition;
         private static bool _isPressed;
@@ -83,11 +82,13 @@ public sealed class Inputer : SingleBehaviour<Inputer>
 
         public static void OnPressed(Vector2 screenPosition)
         {
-            _screenResolution = Screen.currentResolution;
+            _screenResolution = new Resolution();
+            _screenResolution.width = Screen.width;
+            _screenResolution.height = Screen.height;
 
             _pressedPosition = screenPosition;
 
-            _lastPressedPosition2 = _lastPressedPosition;
+            _lastPressedPosition2 = new Vector2(Player.Movement.transform.position.x / 2.425f * _screenResolution.width / 2, 0);
 
             _isPressed = true;
         }
@@ -97,11 +98,12 @@ public sealed class Inputer : SingleBehaviour<Inputer>
         {
             Vector2 delta = screenPosition - _pressedPosition;
 
-            Draged?.Invoke( Mathf.Clamp((((screenPosition.x - (_pressedPosition.x - _lastPressedPosition2.x)) / _screenResolution.width)) * 3f, -1, 1) );
+            Draged?.Invoke( Mathf.Clamp((screenPosition.x - (_pressedPosition.x - _lastPressedPosition2.x)) / _screenResolution.width * 3.25f, -1f, 1f) );
 
-            _lastPressedPosition = (screenPosition - (_pressedPosition - _lastPressedPosition2));
+            //_lastPressedPosition.x = Mathf.Clamp(screenPosition.x - (_pressedPosition.x - _lastPressedPosition2.x), _screenResolution.width / -2, _screenResolution.width / 2);
+            //_lastPressedPosition.y = Mathf.Clamp(screenPosition.y - (_pressedPosition.y - _lastPressedPosition2.y), _screenResolution.height / -2, _screenResolution.height / 2);
 
-            if( delta.magnitude < _screenResolution.width / 200 || _isPressed == false ) return;
+            if ( delta.magnitude < _screenResolution.width / 200 || _isPressed == false ) return;
 
             Direction direction = Mathf.Abs(delta.x) > Mathf.Abs(delta.y) ? (delta.x > 0 ? Direction.Right : Direction.Left) : (delta.y < 0 ? Direction.Down : Direction.Up);
 

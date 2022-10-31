@@ -28,6 +28,7 @@ public class Portal : Placeable
     // Static
 
 
+    public static bool IsCanPlace => State == PortalState.None;
     public static bool IsAlreadyExist => State == PortalState.Exist;
     public static bool IsAlreadyTransite => State == PortalState.Transite;
     public static bool IsWaitingForSecondPortal => State == PortalState.WaitingForSecondPortal;

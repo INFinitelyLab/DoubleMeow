@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Diagnostics;
 using System.Text;
+using UnityEngine.Rendering.Universal;
 
 public class Debuger : MonoBehaviour
 {
@@ -16,10 +17,18 @@ public class Debuger : MonoBehaviour
     private int level;
     private int deathCount;
 
+    public UniversalRenderPipelineAsset _asset;
+
+
+
+    public void OnRescale(float factor)
+    {
+        _asset.renderScale = factor;
+    }
+
 
     void Start()
     {
-
         Resources.LoadAll<Material>("");
 
         Stats.LevelUped += OnLevelUped;
@@ -83,5 +92,11 @@ public class Debuger : MonoBehaviour
             frames = 0;
             lastInterval = timeNow;
         }
+    }
+
+
+    private void OnDisable()
+    {
+        _asset.renderScale = 1;
     }
 }
