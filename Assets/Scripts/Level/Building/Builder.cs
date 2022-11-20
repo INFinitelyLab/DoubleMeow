@@ -10,8 +10,12 @@ public class Builder : MonoBehaviour
 {
     [SerializeField] private List<Building> _prefabs;
     [SerializeField] private List<DecorationBuilding> _decoPrefabs;
+    [SerializeField] private DecorationBuilding _decoTurnPrefab;
     [SerializeField] private Building _startBuilding;
+    [SerializeField] private Building _bridge;
     [SerializeField] private Building _vehicle;
+    [SerializeField] private Building _buildingWhoTurnLeft;
+    [SerializeField] private Building _buildingWhoTurnRight;
     [SerializeField] private float _vehiclePropastWidth;
 
     [SerializeField] private Transform _startPoint;
@@ -19,6 +23,7 @@ public class Builder : MonoBehaviour
     [SerializeField] private Obstacler _obstacler;
     [SerializeField] private Metroer _metroer;
     [SerializeField] private Curver _curver;
+    [SerializeField] private Tiler _tiler;
     [SerializeField] private float _buildingWidth;
     [SerializeField] private int _startCount;
 
@@ -26,8 +31,23 @@ public class Builder : MonoBehaviour
     [SerializeField] private float _distanceForBuildings;
     [SerializeField] private float _distanceForDecoBuildings;
 
+    private Quaternion _rotation;
+
     private string _currentIdentityName;
     private float _decoEndPoint;
+
+    private int _height;
+    private int _pastHeight;
+    private int _nextHeight;
+
+    private int _nextErIndex;
+
+    private bool _isNeedToEnableMetroMode;
+    private bool _isNeedToEnableTilerMode;
+    private bool _isNeedToEnableCurveMode;
+
+    private bool _isNeedToTurn;
+
 
     private float _totalVehicleWidth;
 
@@ -35,13 +55,21 @@ public class Builder : MonoBehaviour
 
     private Building _pastBuilding;
     private bool _nextBuildingIsVehicle;
+    private bool _pastBuildingIsVehicle;
     private Building _currentBuilding;
 
     private Transform _player;
 
     private RoadLine _endLine = RoadLine.Venus;
 
-    private List<Building> _pool = new List<Building>();
+    private Building _lastBuilding;
+    private bool IsCanPlaceEr => _isNeedToEnableCurveMode == false && _isNeedToEnableMetroMode == false && _isNeedToEnableTilerMode == false;
+
+    
+    public void Rotate(bool isLeft)
+    {
+        _rotation.eulerAngles += new Vector3(0, isLeft? -90 : 90, 0);
+    }
 
 
     private void Start()
@@ -51,9 +79,7 @@ public class Builder : MonoBehaviour
         _currentBuilding = _startBuilding;
         _nextBuildingIsVehicle = false;
 
-        GenerateFor(_startCount, true);
-
-        //EnableCurveGeneration();
+        CreateNewBuilding(_startBuilding, true);
 
         Regenerate(false);
 
@@ -77,66 +103,113 @@ public class Builder : MonoBehaviour
 
     private void Regenerate(bool isStartTile)
     {
-        float currentPlayerPosition = Player.Movement.transform.position.z;
-        float lastBuildingPosition = _pool.Last().transform.position.z;
+        Vector3 currentPlayerPosition = Player.Movement.transform.position;
+        Vector3 lastBuildingPosition = _lastBuilding.transform.position;
 
-        while ( currentPlayerPosition + _distanceForDecoBuildings - _totalVehicleWidth > lastBuildingPosition )
+        while ( Vector3.Distance(currentPlayerPosition, lastBuildingPosition) < _distanceForDecoBuildings - _totalVehicleWidth)
         {
+
             _pastBuilding = _currentBuilding;
             _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? _vehicle : PickRandomBuilding(_endLine, _nextBuildingIsVehicle, _vehicle));
 
             _nextBuildingIsVehicle = GetVehicleIfRandom();
 
-
-            if(Portal.IsWaitingForSecondPortal)
-                CreateNewBuilding(_currentBuilding, isStartTile, _pool.Last().EndPoint.transform.position.z + (3 * Game.Difficulty));
+            if (_currentBuilding != _vehicle && _pastBuilding != _vehicle && Portal.IsWaitingForSecondPortal == false)
+            {
+                if ( _isNeedToTurn == false && IsCanPlaceEr == true)
+                {
+                    _pastHeight = _height;
+                    _height = _nextHeight;
+                    _nextHeight = _height == 1 || _height == -1 ? 0 : (Random.Range(0, 2) == 0 ? 1 : -1);
+                }
+                else
+                {
+                    _pastHeight = _height;
+                    _height = _nextHeight;
+                    _nextHeight = 0;
+                }
+            }
             else
-                CreateNewBuilding(_currentBuilding, isStartTile);
-
-            lastBuildingPosition = _pool.Last().transform.position.z;
-        }
-
-        _trigger.MoveTo( Player.Movement.transform.position.z + 2 * Game.Difficulty );
-
-
-    }
-
-
-    private void GenerateFor(int count, bool isStartBuilding)
-    {
-        for( int index = 0; index < count; index++ )
-        {
-            _pastBuilding = _currentBuilding;
-            _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? _vehicle : PickRandomBuilding(_endLine, _currentBuilding == _vehicle, _currentBuilding.IsCanConnectToVehicle ? null : _vehicle));
-
-            _nextBuildingIsVehicle = GetVehicleIfRandom();
+            {
+                _nextHeight = _height;
+            }
 
             if (Portal.IsWaitingForSecondPortal)
-                CreateNewBuilding(_currentBuilding, isStartBuilding, _pool.Last().EndPoint.transform.position.z + (3 * Game.Difficulty));
+            {
+                CreateNewBuilding(_currentBuilding, isStartTile, new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) + _rotation * (Vector3.forward * (3 * Game.Difficulty)));
+            }
             else
-                CreateNewBuilding(_currentBuilding, isStartBuilding);
+            {
+                CreateNewBuilding(_currentBuilding, isStartTile);
+
+                if (_currentBuilding == _vehicle)
+                {
+                    _pastBuilding = _currentBuilding;
+                    _pastBuildingIsVehicle = true;
+                    _currentBuilding = PickRandomBuilding(_endLine, true, _vehicle);
+
+                    CreateNewBuilding(_currentBuilding, false);
+                }
+                else
+                {
+                    _pastBuildingIsVehicle = false;
+                }
+            }
+
+            lastBuildingPosition = _lastBuilding.transform.position;
+
+            if (IsCanPlaceTurn())
+            {
+                EnableTurn();
+                DisableTurn();
+            }
+            else if (IsCanPlaceMetro())
+            {
+                EnableMetroGeneration();
+             
+                break;
+            }
+            else if( IsCanPlaceTiler() )
+            {
+                EnableTilerGeneration();
+
+                break;
+            }
+            else if( IsCanPlaceCurve() )
+            {
+                EnableCurveGeneration();
+
+                break;
+            }
+            else if( IsCanPlaceBridge() )
+            {
+                EnableBridge();
+                DisableBridge();
+            }
         }
+
+        _trigger.MoveTo( Player.Movement.transform.position + Player.Movement.transform.rotation * (Vector3.forward * 3));
     }
 
 
-    private Building CreateNewBuilding(Building origin, bool isStartBuilding, float fromZ = 0 )
+    private Building CreateNewBuilding(Building origin, bool isStartBuilding, Vector3 from = default, bool isNeedToRise = false )
     {
-
         Building building = Instantiate( origin );
 
-        building.transform.SetParent(transform);
 
         if (isStartBuilding == false && origin != _vehicle)
         {
-            _endLine = _obstacler.Generate(building, _endLine);
+            _endLine = _obstacler.Generate(building, _endLine, (_height < _nextHeight && _nextBuildingIsVehicle == false) || isNeedToRise , origin == _bridge);
         }
 
-        if (_pool.Count > 0)
+        if (isStartBuilding == false)
         {
-            if (origin == _vehicle) building.transform.localPosition = Vector3.forward * ((fromZ == 0? _pool.Last().EndPoint.position.z : fromZ) + ((_vehiclePropastWidth + 1) * Game.Difficulty) - 1);
-            else
+            building.transform.localRotation = _rotation;
 
-            building.transform.localPosition = Vector3.forward * ((fromZ == 0?_pool.Last().EndPoint.position.z : fromZ) + (_currentBuilding.IsNearly || _pastBuilding.IsNearly? 0 : (((_buildingWidth + 1) * Game.Difficulty) - 1)));
+            if (origin == _vehicle)
+                building.transform.localPosition = (from == default? new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) : from) + (_rotation * Vector3.forward * ((_vehiclePropastWidth + 1) * Game.Difficulty - 1)) + Vector3.up * _height * 1f;
+            else
+                building.transform.localPosition = (from == default ? new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) : from) + (_rotation * Vector3.forward * ((_currentBuilding.IsNearly || _pastBuilding.IsNearly) ? 0 : (((_buildingWidth + 1 + building.PlaceOffset) * Game.Difficulty) - 1))) + Vector3.up * _height * 1f;
         }
         else
         {
@@ -147,12 +220,22 @@ public class Builder : MonoBehaviour
         {
             building.Animate();
 
-            StartCoroutine(WaitForActive(building.transform));
+            if (_pastBuildingIsVehicle == false)
+            {
+                StartCoroutine(WaitForActive(building.transform));
+            }
+            else
+            {
+                building.gameObject.SetActive(true);
+            }
         }
 
         if (origin != _vehicle)
         {
-            _decoEndPoint = Building.PlaceDecorations(_decoEndPoint, building.transform.position.z , building.EndPoint.localPosition.z, _decoPrefabs, (_pastBuilding == _vehicle ? 2 : 0) + (_nextBuildingIsVehicle? 1 : 0));
+            if (origin != _buildingWhoTurnLeft && origin != _buildingWhoTurnRight)
+                _decoEndPoint = Building.PlaceDecorations(_height, _decoEndPoint, building.transform.position, _rotation, building.EndPoint.localPosition.z, _decoPrefabs, (_pastBuilding == _vehicle ? 2 : 0) + (_nextBuildingIsVehicle ? 1 : 0));
+            else
+                _decoEndPoint = Building.PlaceDecorationsForTurn(_height, _decoEndPoint, building.GetComponentsInChildren<Turner>()[0], building.transform.position, _rotation, _decoPrefabs, _decoTurnPrefab, origin == _buildingWhoTurnLeft );
 
             _totalVehicleWidth = 0;
         }
@@ -163,25 +246,15 @@ public class Builder : MonoBehaviour
             _totalVehicleWidth += _vehicle.EndPoint.localPosition.z + _vehiclePropastWidth;
         }
 
-        _pool.Add( building );
+        _lastBuilding = building;
 
         return building;
     }
 
 
-    private void DeleteLastBuilding()
-    {
-        if (_pool.Count == 0) return;
-
-        Destroy(_pool.Last().gameObject);
-
-        _pool.RemoveAt( _pool.Count );
-    }
-
-
     private Building PickRandomBuilding(RoadLine startLine, bool exceptVehiclephobia, Building except = null, Building except2 = null)
     {
-        if (_pool.Count == 0 || Portal.IsWaitingForSecondPortal)
+        if (Portal.IsWaitingForSecondPortal)
             return _startBuilding;
         else
         {
@@ -214,10 +287,10 @@ public class Builder : MonoBehaviour
 
     private bool GetVehicleIfRandom()
     {
-        if (_pool.Count == 0 || Portal.IsWaitingForSecondPortal)
+        if (Portal.IsWaitingForSecondPortal)
             return false;
 
-        if (_pool.Last().IsCanConnectToVehicle == true && Random.Range(0, 3) == 1)
+        if (_lastBuilding.IsCanConnectToVehicle == true && Random.Range(0, 3) == 1)
         {
             if (_currentIdentityName == _vehicle.name)
             {
@@ -241,85 +314,197 @@ public class Builder : MonoBehaviour
     }
 
 
+
     private void EnableMetroGeneration()
     {
-        //CreateNewBuilding(_nextBuilding, false);
-
         _trigger.Triggered -= Regenerate;
 
-        //if (_pool.Last().IsCanConnectToVehicle == false) CreateNewBuilding(PickRandomBuilding(_endLine, true, _vehicle), false);
-        if (Portal.IsWaitingForSecondPortal) CreateNewBuilding(_startBuilding, false);
+        _height = 0;
+        _nextHeight = 0;
 
-        if( _currentIdentityName != _vehicle.name )
-        {
-            _currentIdentityCount = 0;
-            _currentIdentityName = _vehicle.name;
-        }
-
-        while( _currentIdentityCount < 3 )
+        for (int index = 0; index < 3; index++)
         {
             CreateNewBuilding(_vehicle, false);
-
-            _currentIdentityCount++;
         }
 
-        _metroer.Spawn( _pool.Last().EndPoint.position.z + _buildingWidth, DisableMetroGeneration );
+        _metroer.Spawn( _lastBuilding.EndPoint.position + _rotation * Vector3.forward * _buildingWidth, _rotation , DisableMetroGeneration );
 
-        Building.PlaceDecorations(0, _pool.Last().EndPoint.position.z + _buildingWidth, 15, _decoPrefabs, 3);
+        Building.PlaceDecorations(_height, 0, _lastBuilding.EndPoint.position + _rotation * Vector3.forward * _buildingWidth, _rotation, 15, _decoPrefabs, 3);
     }
 
-
-    public void DisableMetroGeneration(float fromZ)
+    public void DisableMetroGeneration(Vector3 from)
     {
         _trigger.Triggered += Regenerate;
 
         _endLine = RoadLine.Venus;
+        _height = 0;
+        _nextHeight = 0;
 
-        CreateNewBuilding( _vehicle, false, fromZ );
-        CreateNewBuilding(PickRandomBuilding(RoadLine.Venus , true, _vehicle), false);
+        _isNeedToEnableMetroMode = false;
 
-        Fog.Instance.gameObject.SetActive(true);
+        CreateNewBuilding( _vehicle, false, from );
+        CreateNewBuilding(_startBuilding, false);
 
         Player.Presenter.DisableCurvatization();
+
+        Fog.Instance.gameObject.SetActive(true);
     }
+
+    public bool IsCanPlaceMetro()
+    {
+        return (_isNeedToEnableMetroMode && _height == 0 && _nextHeight == _height && _currentBuilding != _vehicle && Portal.IsWaitingForSecondPortal == false);
+    }
+
 
 
     public void EnableCurveGeneration()
     {
         _trigger.Triggered -= Regenerate;
 
-        if (_nextBuildingIsVehicle) CreateNewBuilding(_vehicle, false);
-        if (Portal.IsWaitingForSecondPortal) CreateNewBuilding(_startBuilding, false);
+        _height = 0;
+        _nextHeight = 0;
 
-        _curver.Spawn(_pool.Last().EndPoint.position.z + _buildingWidth, DisableCurveGeneration, _decoEndPoint, _nextBuildingIsVehicle);
+        _curver.Spawn(DisableCurveGeneration, _decoEndPoint, _nextBuildingIsVehicle, _lastBuilding.EndPoint.position + (_rotation * Vector3.forward * (((_buildingWidth - 1) * Game.Difficulty) + 1)), _rotation);
     }
 
-
-    public void DisableCurveGeneration(float fromZ)
+    public void DisableCurveGeneration(Vector3 from)
     {
         _trigger.Triggered += Regenerate;
 
         _endLine = RoadLine.Venus;
+        _height = 0;
+        _nextHeight = 0;
 
-        CreateNewBuilding(PickRandomBuilding(RoadLine.Venus, true, _vehicle), false, fromZ);
+        _isNeedToEnableCurveMode = false;
+
+        CreateNewBuilding(_startBuilding, false, from);
 
         Fog.Instance.gameObject.SetActive(true);
+    }
+
+    public bool IsCanPlaceTiler()
+    {
+        return (_isNeedToEnableTilerMode && _nextHeight == _height && _height == 0 && _currentBuilding == _startBuilding && Portal.IsWaitingForSecondPortal == false);
+    }
+
+
+
+    public void EnableTilerGeneration()
+    {
+        _trigger.Triggered -= Regenerate;
+
+        _height = 0;
+        _nextHeight = 0;
+
+        _tiler.Spawn(_lastBuilding.EndPoint.position, _rotation, DisableTilerGeneration, _decoEndPoint, _endLine);
+    }
+
+    public void DisableTilerGeneration(Vector3 from, RoadLine line)
+    {
+        _trigger.Triggered += Regenerate;
+
+        _endLine = line;
+        _height = 0;
+        _nextHeight = 0;
+
+        _decoEndPoint = 0;
+
+        _isNeedToEnableTilerMode = false;
+
+        CreateNewBuilding(_startBuilding, false, from - _rotation * Vector3.forward * (_currentBuilding.IsNearly || _pastBuilding.IsNearly ? 0 : (((_buildingWidth + 1 + _startBuilding.PlaceOffset) * Game.Difficulty) - 1)) );
+    }
+
+    public bool IsCanPlaceCurve()
+    {
+        return (_isNeedToEnableCurveMode && _height == 0 && _nextHeight == 0 && Portal.IsWaitingForSecondPortal == false);
+    }
+
+
+    public void EnableBridge()
+    {
+        _currentBuilding = _bridge;
+
+        CreateNewBuilding( _bridge, false );
+
+        _pastBuildingIsVehicle = false;
+    }
+
+    public void DisableBridge()
+    {
+        _pastBuilding = _bridge;
+        _currentBuilding = _startBuilding;
+
+        CreateNewBuilding( _startBuilding, false );
+    }
+
+    public bool IsCanPlaceBridge()
+    {
+        return (Portal.IsWaitingForSecondPortal == false && _currentBuilding == _startBuilding && _height < 1 && _nextHeight == _height );
+    }
+
+
+    public void EnableTurn()
+    {
+        bool isLeft = Random.Range(0, 2) == 0;
+
+        CreateNewBuilding( isLeft? _buildingWhoTurnLeft : _buildingWhoTurnRight, false );
+        Rotate( isLeft );
+    }
+
+    public void DisableTurn()
+    {
+        _isNeedToTurn = false;
+    }
+
+    public bool IsCanPlaceTurn()
+    {
+        return ( Portal.IsWaitingForSecondPortal == false && _height == _nextHeight && _isNeedToTurn );
+    }
+
+
+    private void StartNextEr()
+    {
+        switch( _nextErIndex )
+        {
+            case 0:
+                _isNeedToEnableTilerMode = true;
+                break;
+            case 1:
+                _isNeedToEnableCurveMode = true;
+                break;
+            case 2:
+                _isNeedToEnableMetroMode = true;
+                break;
+            default: throw new Exception("Ќеверный индекс допольнительного режима");
+        }
+
+        _nextErIndex = _nextErIndex == 2 ? 0 : (_nextErIndex + 1);
     }
 
 
     private IEnumerator ErLoop()
     {
-        yield return new WaitForSeconds(60);
+        yield return new WaitForSeconds(5);
+
+        _nextErIndex = Random.Range(0,3);
+
 
         while(Game.IsActive)
         {
-            EnableCurveGeneration();
+            StartNextEr();
 
-            yield return new WaitForSeconds(60);
+            yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return new WaitForSeconds(10 * Game.Difficulty);
 
-            EnableMetroGeneration();
+            StartNextEr();
 
-            yield return new WaitForSeconds(60);
+            yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return new WaitForSeconds(10 * Game.Difficulty);
+
+            _isNeedToTurn = true;
+
+            yield return new WaitUntil(() => _isNeedToTurn == false);
+            yield return new WaitForSeconds(10 * Game.Difficulty);
         }
     }
 

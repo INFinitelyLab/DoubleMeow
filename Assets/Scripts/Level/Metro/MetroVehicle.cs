@@ -13,7 +13,7 @@ public class MetroVehicle : Building
     {
         _player = Player.Movement;
 
-        _body.transform.localPosition = Vector3.forward * ((transform.position.z - _player.transform.position.z) * _moveSpeed);
+        _body.transform.localPosition = Vector3.forward * ((Mathf.Abs(_body.position.z - _player.transform.position.z) + Mathf.Abs(_body.position.x - _player.transform.position.x)) * _moveSpeed);
     }
 
 
@@ -23,7 +23,7 @@ public class MetroVehicle : Building
     }
 
 
-    private void Update()
+    private new void Update()
     {
         if (Game.IsActive == false && _moveSpeed != 0) if (Mathf.Abs(Player.Movement.transform.position.x - transform.position.x) < 0.75f || Game.Mode.InVehicleMode == false) _moveSpeed = Mathf.MoveTowards( _moveSpeed, 0 , 5 * Time.deltaTime );
 

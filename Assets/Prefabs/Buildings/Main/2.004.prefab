@@ -73,6 +73,7 @@ MonoBehaviour:
     020'
   _maxIdentityCount: 2
   _isPortalFriendly: 0
+  _isObstacleInCenter: 1
 --- !u!65 &2972410065110340961
 BoxCollider:
   m_ObjectHideFlags: 0

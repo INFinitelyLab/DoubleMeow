@@ -9,14 +9,17 @@ public class Presenter : MonoBehaviour
     [SerializeField] private float _bendIntensive;
     [SerializeField] private float _bendSmoothTime;
     [SerializeField] private SkinnedMeshRenderer _mesh;
+    [SerializeField] private Transform _head;
 
     private Transform _transform;
-    private Quaternion _targetRotation;
+    private Quaternion _targetRotation = Quaternion.identity;
 
     private float _moveSpeed = 1;
 
     private Vector3 _scale = Vector3.one * 0.55f;
     private float _rescaleTime;
+
+    public Transform Head => _head;
 
 
     private void Awake()
@@ -24,6 +27,12 @@ public class Presenter : MonoBehaviour
         Shader.SetGlobalFloat("_CurvatureIntensive", 0);
 
         _transform = transform;
+    }
+
+
+    private void Start()
+    {
+        if( Stats.selectedSkin != "" ) _mesh.sharedMaterial = Skin.Find(Stats.selectedSkin).Material;
     }
 
 
@@ -39,12 +48,18 @@ public class Presenter : MonoBehaviour
         if (direction.IsHorizontal())
         {
             if (Game.Mode.InVehicleMode)
-                _targetRotation = Quaternion.Euler(0, 0, direction.ToInt() * _bendIntensive * -intensive / 3);
+                _targetRotation = Quaternion.Euler(0, 0, direction.ToInt() * _bendIntensive * -intensive / 2.5f);
             else
                  _targetRotation = Quaternion.Euler(0, direction.ToInt() * _bendIntensive * intensive, 0);
 
             _moveSpeed = 10;
         }
+    }
+
+
+    public void OnSlope(float gradus)
+    {
+        _targetRotation = Quaternion.Euler( gradus, _targetRotation.eulerAngles.y, _targetRotation.eulerAngles.z );
     }
 
 
@@ -70,19 +85,19 @@ public class Presenter : MonoBehaviour
     {
         _ownVehicle.SetActive(true);
 
-        _animator.speed = 0;
+        _animator.SetBool("InVehicle", true);
 
         _bendSmoothTime /= 2f;
 
         Invoke(nameof(EnableCurvatization), 1f);
     }
-   
+
 
     public void DisableVehicleMode()
     {
         _ownVehicle.SetActive(false);
 
-        _animator.speed = 1;
+        _animator.SetBool("InVehicle", false);
 
         _bendSmoothTime *= 2f;
     }
@@ -121,10 +136,14 @@ public class Presenter : MonoBehaviour
 
     public void Update()
     {
-        if (Game.IsActive == false) return;
+        if (Game.IsActive == false || Game.Mode.InCurveMode) return;
             
         _transform.localRotation = Quaternion.Lerp( _transform.localRotation, _targetRotation, _moveSpeed * _bendSmoothTime * Time.deltaTime );
-        _targetRotation = Quaternion.Lerp( _targetRotation, Quaternion.identity , _moveSpeed * _bendSmoothTime * Time.deltaTime );
+
+        _targetRotation.x = Mathf.Lerp(_targetRotation.x, 0, _moveSpeed * _bendSmoothTime * Time.deltaTime * 1.5f);
+        _targetRotation.y = Mathf.Lerp(_targetRotation.y, 0, _moveSpeed * _bendSmoothTime * Time.deltaTime);
+        _targetRotation.z = Mathf.Lerp(_targetRotation.z, 0, _moveSpeed * _bendSmoothTime * Time.deltaTime);
+
 
         _moveSpeed = Mathf.MoveTowards( _moveSpeed, 1 , Time.deltaTime );
 

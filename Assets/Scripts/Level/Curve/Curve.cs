@@ -1,18 +1,28 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Curve : Building
 {
-    [SerializeField] private Material _materialForLowGraphics;
-    [SerializeField] private MeshRenderer _renderer;
     [SerializeField] private Transform[] _positionsForSolarPanels;
-    [SerializeField] private Transform[] _positionsForStaticSolarPanels;
 
     public Transform[] PositionsForSolarPanels => _positionsForSolarPanels;
-    public Transform[] PositionsForStaticSolarPanels => _positionsForStaticSolarPanels;
+
+    /*private Transform _player;
+    private Transform _transform;
+
+    private bool isActive;
 
 
-    private void Awake()
+
+
+    protected override void Update()
     {
-        //if (Stats.TargetGraphics != GraphicPreset.High) _renderer.material = _materialForLowGraphics;
-    }
+        if (Vector3.Distance(_player.position, _transform.position) < 20 && isActive == false)
+        {
+            isActive = true;
+
+            CurveObstacler.GenerateStatic(this);
+        }
+    }*/
 }

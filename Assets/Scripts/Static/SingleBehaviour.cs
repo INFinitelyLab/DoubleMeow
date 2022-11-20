@@ -14,6 +14,10 @@ public abstract class SingleBehaviour<T> : MonoBehaviour where T: SingleBehaviou
         }
     }
 
+
+    public static bool IsExist => _instance != null;
+
+
     private static T _instance { get; set; }
 
     private void OnEnable()

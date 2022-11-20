@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class ObstaclerBase : MonoBehaviour
 {
-    protected class Cell
+    public class Cell
     {
         public bool IsEmpty => Placeable == null;
         public Placeable Placeable { get; private set; }
@@ -14,12 +14,13 @@ public abstract class ObstaclerBase : MonoBehaviour
     }
 
 
-    protected class LargeCell
+    public class LargeCell
     {
         public Cell[] Cells { get; private set; }
 
         public bool IsPath { get; private set; }
-        public bool IsEmpty => Cells[0].IsEmpty == false && Cells[1].IsEmpty == false && Cells[2].IsEmpty == false;
+        public bool IsObstacle { get; private set; }
+        public bool IsEmpty { get; private set; } = true;
 
 
         public LargeCell()
@@ -29,11 +30,22 @@ public abstract class ObstaclerBase : MonoBehaviour
             IsPath = false;
         }
 
-        public void EnablePath() => IsPath = true;
+        public void EnablePath()
+        {
+            IsPath = true;
+        }
+
+
+        public void EnableObstacle()
+        {
+            IsObstacle = true;
+        }
 
         public void AddPlaceable(Placeable placeable, int depth)
         {
             if (depth < 0 && depth > 2) return;
+
+            IsEmpty = false;
 
             Cells[depth] = new Cell(placeable);
         }

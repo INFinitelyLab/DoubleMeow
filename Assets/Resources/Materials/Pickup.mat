@@ -8,14 +8,14 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Pickup
-  m_Shader: {fileID: -6465566751694194690, guid: f01a596f068b5f64f8f2ca97829dccb6, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 106aca176b52a69429a27ac3e511f9ae, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 6
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 1
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
@@ -112,11 +112,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MSA:
-        m_Texture: {fileID: 2800000, guid: f027cb90ed1dbe64d8853a55f5e1c815, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: d2a0c958385d95f4f84fa442584bbe71, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCapTex:
@@ -209,6 +209,7 @@ Material:
     - _Cull: 0
     - _Curvature: 0.015
     - _CurvatureIntensive: 0
+    - _Curve_Direction_Z: 0
     - _Cutoff: 0
     - _Cutout: 0
     - _DestBlend: 10
@@ -326,7 +327,9 @@ Material:
     - _Specularess: 0.078125
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _StartAt: -7
     - _Surface: 0
+    - _Test: 0
     - _TransparencyMaskAmount: 1
     - _TransparencyMaskContrast: 1
     - _UVSec: 0
@@ -347,7 +350,7 @@ Material:
     - _Color: {r: 0.6462264, g: 1, b: 0.9635303, a: 1}
     - _Curvatization_Intensity: {r: 0, g: 0, b: 0, a: 0}
     - _CurvatureDirection: {r: 0.005, g: 0, b: 0, a: 0}
-    - _Curve_Direction: {r: 0, g: 0, b: 0, a: 0}
+    - _Curve_Direction: {r: -0.0067, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}
@@ -358,6 +361,7 @@ Material:
     - _LightmapColor: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapRot: {r: 0, g: 0, b: 0, a: 0}
+    - _Offset: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _PointLightColor: {r: 1, g: 1, b: 1, a: 1}
     - _PointLightPosition: {r: 0, g: 0, b: 0, a: 1}

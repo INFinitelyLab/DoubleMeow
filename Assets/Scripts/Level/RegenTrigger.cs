@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-public class RegenTrigger : MonoBehaviour
+public class RegenTrigger : SingleBehaviour<RegenTrigger>
 {
     public System.Action Triggered;
 
@@ -15,8 +15,8 @@ public class RegenTrigger : MonoBehaviour
     }
 
 
-    public void MoveTo(float distance)
+    public void MoveTo(Vector3 position)
     {
-        transform.localPosition = Vector3.forward * (distance + 3);
+        transform.localPosition = position;
     }
 }

@@ -18,6 +18,8 @@ public class Skin : ScriptableObject
 
     // Static
 
+
+
     private static Skin[] _skins;
 
 
@@ -57,7 +59,7 @@ public class Skin : ScriptableObject
         {
             PlayerPrefsExtentions.SetSecure(codeName, secure);
 
-            Debug.Log("Получено достижение: " + skin.Name);
+            Debug.Log("Получен скин: " + skin.Name);
         }
     }
 

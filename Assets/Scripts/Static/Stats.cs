@@ -23,6 +23,8 @@ public static class Stats
         }
     }
 
+    public static string selectedSkin { get; private set; }
+
     private static SecureInt _levelCoins;
 
     public static Action<int> CoinsCountChanged;
@@ -49,7 +51,6 @@ public static class Stats
         CoinsCountChanged?.Invoke( Coins );
     }
 
-
     public static bool TryDecreaseCoin(int value)
     {
         if (value < 1)
@@ -68,6 +69,12 @@ public static class Stats
     }
 
 
+    public static void SelectSkin(string skinName)
+    {
+        selectedSkin = skinName;
+    }
+
+
     
     private static void LevelUp()
     {
@@ -80,8 +87,6 @@ public static class Stats
         //Debug.Log("Уровень повышен! " + (int)Level);
     }
 
-
-
     public static void OnDeath()
     {
         DeathCount++;
@@ -93,7 +98,6 @@ public static class Stats
     {
         PerfectJumpCount++;
     }
-
 
     public static void OnUnperfectJump()
     {
@@ -109,11 +113,11 @@ public static class Stats
         PlayerPrefsExtentions.SetSecure( LevelCoinsSaveKey, _levelCoins);
 
         PlayerPrefs.SetInt("Death", DeathCount);
-
         PlayerPrefs.SetInt("TargetFPS", TargetFPS);
         PlayerPrefs.SetInt("TargetGraphic", (int)TargetGraphics);
-    }
 
+        PlayerPrefs.SetString("SelectedSkin", selectedSkin);
+    }
 
     public static void Load()
     {
@@ -122,8 +126,9 @@ public static class Stats
         _levelCoins = PlayerPrefsExtentions.GetSecure( LevelCoinsSaveKey, "LevelCoins" );
 
         DeathCount = PlayerPrefs.GetInt("Death");
-
         TargetFPS = PlayerPrefs.GetInt("TargetFPS");
         TargetGraphics = (GraphicPreset)PlayerPrefs.GetInt("TargetGraphic");
+
+        selectedSkin = PlayerPrefs.GetString("SelectedSkin");
     }
 }

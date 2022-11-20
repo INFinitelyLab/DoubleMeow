@@ -131,6 +131,7 @@ MonoBehaviour:
     202'
   _maxIdentityCount: 1
   _isPortalFriendly: 0
+  _isObstacleInCenter: 1
 --- !u!1 &8697675584839295662
 GameObject:
   m_ObjectHideFlags: 0

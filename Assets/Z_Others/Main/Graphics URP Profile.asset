@@ -15,7 +15,7 @@ MonoBehaviour:
   components:
   - {fileID: 5883343483839424607}
   - {fileID: 841743448124725821}
-  - {fileID: 6732394066107165658}
+  - {fileID: 7836526878857712924}
 --- !u!114 &841743448124725821
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -85,7 +85,7 @@ MonoBehaviour:
   dirtIntensity:
     m_OverrideState: 0
     m_Value: 0
---- !u!114 &6732394066107165658
+--- !u!114 &7836526878857712924
 MonoBehaviour:
   m_ObjectHideFlags: 3
   m_CorrespondingSourceObject: {fileID: 0}

@@ -4,16 +4,54 @@ public class FollowCamera : MonoBehaviour, ILowereable
 {
     [SerializeField] private Transform _target;
     [SerializeField] private float _moveSpeed;
+    
+    [Header("Tiler")]
+    [SerializeField] private Vector3 _tilerPosition;
+    [SerializeField] private Vector3 _tilerRotation;
+
+    [Header("Metro")]
+    [SerializeField] private Vector3 _metroPosition;
+    [SerializeField] private Vector3 _metroRotation;
+    [SerializeField] private AnimationCurve _metroCurve;
+
+    [Header("Turn")]
+    [SerializeField] private AnimationCurve _turnCurve;
+    [SerializeField] private AnimationCurve _turnCameraCurve;
+
+    private Vector3 _currentTilerPosition;
+    private Vector3 _currentTilerRotation;
+
+    private Vector3 _currentMetroPosition;
+    private Vector3 _currentMetroRotation;
 
     private Transform _transform;
 
     private Vector3 _position;
+    private Vector3 _turnPosition;
+    private Quaternion _rotation;
+    private Quaternion _turnRotation;
+    private Vector3 _localPosition;
     private Vector3 _rotationOffset;
+
+    private float _height;
+    private float _targetHeight;
+
+    private float _metroCurveTime = 4;
+
+    private bool _isTilerMode;
+    private bool _isMetroMode;
+
+    private bool _isTurnMode;
+    private float _turnFarIntensity;
+
+    private float _turnIntensity = 2;
 
 
     private void Awake()
     {
         _transform = transform;
+
+        _localPosition = _transform.position;
 
         _rotationOffset = _transform.localEulerAngles;
 
@@ -25,23 +63,108 @@ public class FollowCamera : MonoBehaviour, ILowereable
     }
 
 
+    private void OnEnable()
+    {
+        Player.RepositeCamera += SetHeight;
+    }
+
+
+    private void OnDisable()
+    {
+        Player.RepositeCamera-= SetHeight;
+    }
+
+
+    public void SetHeight(float height)
+    {
+        _targetHeight = height;
+    }
+
+
+    public void EnableTurnMode(Turner turner)
+    {
+        _isTurnMode = true;
+    }
+
+
+    public void DisableTurnMode()
+    {
+        _isTurnMode = false;
+
+        _turnPosition.x = Player.Movement.TurnPositionWithoutRotation.x;
+        _turnPosition.z = Player.Movement.TurnPositionWithoutRotation.z;
+    }
+
+
+    public void EnableTilerMode()
+    {
+        _isTilerMode = true;
+    }
+
+
+    public void DisableTilerMode()
+    {
+        _isTilerMode = false;
+    }
+
+
+    public void EnableMetroMode()
+    {
+        _isMetroMode = true;
+
+        _metroCurveTime = 0;
+    }
+
+
+    public void DisableMetroMode()
+    {
+        _isMetroMode = false;
+
+        _metroCurveTime = 0;
+    }
+
+
     private void LateUpdate()
     {
         if (_target == null)
             throw new System.Exception("Не назначен объект для преследования камерой");
 
-        _position = _transform.position;
+
+        if (_isTurnMode)
+        {
+            _turnPosition.x = Player.Movement.TurnPositionWithoutRotation.x;
+            _turnPosition.z = Player.Movement.TurnPositionWithoutRotation.z;
+        }
+
+        _height = Mathf.Lerp( _height, _targetHeight, 4 * Time.deltaTime );
+
+        _currentTilerPosition = Vector3.Lerp(_currentTilerPosition, (_isTilerMode ? _tilerPosition : Vector3.zero), 2 * Time.deltaTime);
+        _currentTilerRotation = Vector3.Lerp(_currentTilerRotation, (_isTilerMode ? _tilerRotation : Vector3.zero), 2 * Time.deltaTime);
+
+        _currentMetroPosition = Vector3.Lerp(_currentMetroPosition, (_isMetroMode ? _metroPosition : Vector3.zero), 2 * Time.deltaTime);
+        _currentMetroRotation = Vector3.Lerp(_currentMetroRotation, (_isTilerMode ? _metroRotation : Vector3.zero), 2 * Time.deltaTime);
 
         _currentOffset = Vector3.Lerp(_currentOffset, _idealOffset, _moveSpeed / 3 * Time.deltaTime);
 
-        _position.x = Mathf.Lerp(_position.x, (_target.position.x + _currentOffset.x) * (Game.Mode.InCurveMode? 0.75f : 1f), _moveSpeed * Time.deltaTime);
-        _position.y = Mathf.Lerp(_position.y, (_lowers == 0? _target.position.y / 2 : 0) + _currentOffset.y, _moveSpeed * Time.deltaTime);
+        _metroCurveTime = Mathf.MoveTowards( _metroCurveTime, 4, Time.deltaTime );
 
-        _position.z = _target.position.z + _currentOffset.z;
+        _turnFarIntensity = Mathf.Lerp(_turnFarIntensity, _turnCameraCurve.Evaluate( Player.Movement.RotateProgress / 90 ), 2 * Time.deltaTime);
+        
+        {
+            _localPosition.x = Mathf.Lerp(_localPosition.x, ((Player.Movement.Position.x - Player.Movement.TurnPosition.x) + _currentOffset.x) * (Game.Mode.InCurveMode ? 0.75f : 1f) , _moveSpeed * Time.deltaTime);
+            _localPosition.y = Mathf.Lerp(_localPosition.y, (_lowers == 0 ? (Mathf.Lerp(0, _target.position.y, (_isMetroMode ? 1 - _metroCurveTime : _metroCurveTime)) - _height) / 2 : 0) + _currentMetroPosition.y + _currentOffset.y + _height + _currentTilerPosition.y , _moveSpeed* Time.deltaTime);
+            _localPosition.z = -_turnFarIntensity + Player.Movement.Position.z - Player.Movement.TurnPosition.z + _currentOffset.z + _currentTilerPosition.z + _currentMetroPosition.z + _metroCurve.Evaluate(_metroCurveTime * 2.5f) * (_isMetroMode ? 0.5f : 0.5f);
+
+            _position = _target.rotation * _localPosition + _turnPosition;
+
+            _rotation = Quaternion.Euler(_rotationOffset.x + _currentTilerRotation.x + _currentMetroRotation.x, _rotationOffset.y + _target.eulerAngles.y, _rotationOffset.z + (Game.Mode.InCurveMode ? (Player.Movement.TurnPosition - Player.Movement.Position).x * -5 : 0));
+        }
+
+
 
         _transform.position = _position;
 
-        _transform.localRotation = Quaternion.Euler( _rotationOffset.x, _rotationOffset.y , _rotationOffset.z + (Game.Mode.InCurveMode? _transform.position.x * 5 : 0) );
+        _transform.localRotation = _rotation;
     }
 
     #region Lowereable

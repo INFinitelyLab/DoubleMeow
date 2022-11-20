@@ -6,6 +6,7 @@ public class Player : SingleBehaviour<Player>, IGroundeable
     [SerializeField] private Presenter _presenter;
     [SerializeField] private Movement _movement;
     [SerializeField] private Detector _detector;
+    [SerializeField] private FollowCamera _camera;
 
     public static Detector Detector
     {
@@ -40,10 +41,23 @@ public class Player : SingleBehaviour<Player>, IGroundeable
         }
     }
 
+    public static FollowCamera Camera
+    {
+        get
+        {
+            if (Instance._camera == null)
+                throw new Exception("Камер игрока не назначен!");
+
+            return Instance._camera;
+        }
+    }
+
 
     public static Action Jumped;
 
     public static Action<Direction, float> Redirected;
+
+    public static Action<float> RepositeCamera;
 
 
     protected override void OnActive()
@@ -54,6 +68,7 @@ public class Player : SingleBehaviour<Player>, IGroundeable
         Detector.Bumped += OnBumped;
         Movement.Jumped += Presenter.OnJump;
         Movement.Grounded += Presenter.OnGrounded;
+        Movement.RepositeCamera += RepositeCamera;
     }
 
 
@@ -65,6 +80,7 @@ public class Player : SingleBehaviour<Player>, IGroundeable
         Detector.Bumped -= OnBumped;
         Movement.Jumped -= Presenter.OnJump;
         Movement.Grounded -= Presenter.OnGrounded;
+        Movement.RepositeCamera -= RepositeCamera;
     }
 
 

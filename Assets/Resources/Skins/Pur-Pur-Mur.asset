@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59a66b94cfc56454f802a1c17dcb2e81, type: 3}
   m_Name: Pur-Pur-Mur
   m_EditorClassIdentifier: 
-  _material: {fileID: 0}
+  _material: {fileID: 2100000, guid: 3f2deb73bee5f7f479b29408574c5cc7, type: 2}
   _codeName: purple_meow
   _name: Purple Meow
   _uuid: b47u57n8

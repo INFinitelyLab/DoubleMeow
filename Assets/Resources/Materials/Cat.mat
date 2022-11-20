@@ -116,7 +116,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MSA:
-        m_Texture: {fileID: 2800000, guid: ff329dde76e42dd4a828003449d7a404, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -213,6 +213,7 @@ Material:
     - _Cull: 0
     - _Curvature: 0.015
     - _CurvatureIntensive: 0
+    - _Curve_Direction_Z: 0.007
     - _Cutoff: 0.5
     - _Cutout: 0
     - _DestBlend: 10
@@ -330,7 +331,9 @@ Material:
     - _Specularess: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _StartAt: -7
     - _Surface: 0
+    - _Test: 0
     - _TransparencyMaskAmount: 1
     - _TransparencyMaskContrast: 1
     - _UVSec: 0
@@ -351,7 +354,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Curvatization_Intensity: {r: 0, g: 0, b: 0, a: 0}
     - _CurvatureDirection: {r: 0.005, g: 0, b: 0, a: 0}
-    - _Curve_Direction: {r: 0, g: 0, b: 0, a: 0}
+    - _Curve_Direction: {r: -0.008, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}
@@ -362,6 +365,7 @@ Material:
     - _LightmapColor: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapRot: {r: 0, g: 0, b: 0, a: 0}
+    - _Offset: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _PointLightColor: {r: 1, g: 1, b: 1, a: 1}
     - _PointLightPosition: {r: 0, g: 0, b: 0, a: 1}

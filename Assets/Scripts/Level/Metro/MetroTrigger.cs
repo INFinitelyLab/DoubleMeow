@@ -10,14 +10,29 @@ public class MetroTrigger : MonoBehaviour
         {
             if (_isNeedToEnableMetroMode)
             {
-                Game.Mode.EnableVehicleMode();
+                Player.Camera.EnableMetroMode();
 
-                Fog.Instance.gameObject.SetActive(false);
+                Invoke(nameof(EnableMetroMode), 0.3f);
             }
             else
             {
-                Game.Mode.DisableVehicleMode();
+                Player.Camera.DisableMetroMode();
+
+                Invoke(nameof(DisableMetroMode), 0.5f);
             }
         }
+    }
+
+    private void EnableMetroMode()
+    {
+        Game.Mode.EnableVehicleMode();
+
+        Fog.Instance.gameObject.SetActive(false);
+    }
+
+
+    private void DisableMetroMode()
+    {
+        Game.Mode.DisableVehicleMode();
     }
 }

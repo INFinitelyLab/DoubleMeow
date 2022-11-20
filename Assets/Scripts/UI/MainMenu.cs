@@ -28,6 +28,6 @@ public class MainMenu : MonoBehaviour
 
     public void Launch()
     {
-        SceneManager.LoadScene(1);
+        SceneTransiter.TransiteTo( Scene.Game );
     }
 }

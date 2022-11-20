@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 public class Movement : MonoBehaviour
@@ -9,6 +10,7 @@ public class Movement : MonoBehaviour
     [SerializeField] private float _gravityScale;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _roadWidth;
+    [SerializeField] private float _rotateRadius = 15;
     [SerializeField] private float _curveAroundHeight;
     [SerializeField] private GroundChecker _grounder;
 
@@ -18,14 +20,20 @@ public class Movement : MonoBehaviour
     private bool _isNeedToEnableCurveControl;
     private bool _inPortal;
 
+    private Coroutine _jumpRountine;
+
     private RoadLine _line;
 
+    private Quaternion _targetRotation;
+
     private Vector3 _targetPosition;
+    private Vector3 _turnPosition;
     private Vector3 _velocity;
 
     private CharacterController _controller;
     private Transform _transform;
 
+    public Action<float> RepositeCamera;
     public Action Jumped;
     public Action<bool> Grounded;
     public Action<Direction, float> Redirected;
@@ -33,12 +41,22 @@ public class Movement : MonoBehaviour
     public float walkSpeed => _walkSpeed;
     public RoadLine CurrentLine => _line;
 
+    private bool grounded;
+    private bool isTurning;
+
+    public Vector3 Position => Quaternion.Inverse(_transform.rotation) * _transform.localPosition;
+    public Vector3 TurnPosition => Quaternion.Inverse(_transform.rotation) * _turnPosition;
+    public Vector3 TurnPositionWithoutRotation => _turnPosition;
+    public Vector3 TargetPosition => _targetPosition;
+
+    public float RotateProgress { get; private set; }
+
 
     public void Jump()
     {
-        StopAllCoroutines();
+        if (_jumpRountine != null) StopCoroutine(_jumpRountine);
 
-        StartCoroutine(HoldJump(1));
+        _jumpRountine = StartCoroutine(HoldJump(1));
     }
 
 
@@ -49,11 +67,11 @@ public class Movement : MonoBehaviour
         if (_isVehicleControl == true || _isCurveControl)
             return false;
 
-        if ( _grounder.IsGrounded && _velocity.y <= 0)
+        if ( grounded && _velocity.y <= 0)
         {
             PerfectJumpDetector.OnJump();
 
-            _velocity.y = _transform.position.y + _jumpForce;
+            _velocity.y = _jumpForce;
 
             Jumped?.Invoke();
 
@@ -100,17 +118,33 @@ public class Movement : MonoBehaviour
     }
 
 
-    public void Drag(float axis)
+    public void Drag(float intensive)
     {
         if (_isCurveControl == false || _isControlled == false) return;
 
-        _targetPosition.x = axis * 1.5f;
+        _targetPosition.x = Mathf.Clamp(_targetPosition.x + intensive, -1.1f, 1.1f);
+    }
+
+
+    private void OnDrawGizmos()
+    {
+        if(_transform != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine( _transform.position, _transform.position + _transform.forward );
+
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(_transform.position, _transform.position + (_transform.rotation * _velocity.normalized));
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine( _transform.position, _turnPosition );
+        }
     }
 
 
     private void Update()
     {
-        bool grounded = _controller.isGrounded;
+        grounded = _controller.isGrounded;
 
         if (_isVehicleControl == false && _isCurveControl == false && _inPortal == false)
         {
@@ -120,7 +154,7 @@ public class Movement : MonoBehaviour
             }
             else
             {
-                _velocity.y = -0.01f;
+                _velocity.y = CameraSyncer.IsSyncNow? -10f : -0.01f;
             }
         }
         else
@@ -132,11 +166,12 @@ public class Movement : MonoBehaviour
         {
             if (_isCurveControl)
             {
-                _velocity.y = (1f - _transform.position.y + (-Mathf.Cos(_transform.position.x / 1.05f) * _curveAroundHeight)) / Time.deltaTime;
-                Player.Presenter.OnRedraged( transform.position.y * 60f * (_transform.position.x > 0? 1 : -1));
+                _velocity.y = (2.05f + _curveAroundHeight - Position.y + (-Mathf.Cos((TurnPosition.x - Position.x) * 1.1f) * _curveAroundHeight)) / Time.deltaTime;
+                Player.Presenter.OnRedraged( (Position.y - 0.05f) * 60f * ((TurnPosition.x - Position.x) > 0? -1 : 1));
             }
 
-            _velocity.x = (_targetPosition.x - _transform.position.x) * _surfSpeed;
+            _velocity.x = ((TargetPosition.x + TurnPosition.x - Position.x) * _surfSpeed);
+
             if (_isControlled == true)
                 _velocity.z = Mathf.Lerp(_velocity.z, _walkSpeed * Game.Difficulty, 10 * Time.deltaTime);
             else
@@ -148,16 +183,16 @@ public class Movement : MonoBehaviour
             _velocity.z = Mathf.Lerp( _velocity.z , 0 , 6 * Time.deltaTime);
         }
 
-        _controller.Move( _velocity * Time.deltaTime);
+        _controller.Move( transform.rotation * _velocity * Time.deltaTime);
 
         if (_isNeedToEnableCurveControl)
-            if (_transform.position.y < 1 - (Mathf.Cos(_transform.position.x / 1.05f) * _curveAroundHeight))
+            if (Position.y < 1 - (Mathf.Cos(Position.x / 1.05f) * _curveAroundHeight))
             {
                 _isNeedToEnableCurveControl = false;
                 _isCurveControl = true;
             }
 
-        if (_controller.velocity.z <= 0 && _transform.position.z > 3 && _velocity.z > 0 && Game.IsActive && _isControlled == true)
+        if ((Quaternion.Inverse(_transform.rotation) * _controller.velocity).z <= 0.01f && _velocity.z > 0 && Game.IsActive && _isControlled == true)
         {
             Player.Detector.Bump();
 
@@ -172,9 +207,10 @@ public class Movement : MonoBehaviour
             }
 
             Grounded?.Invoke(_controller.isGrounded);
+            RepositeCamera?.Invoke(transform.localPosition.y);
         }
 
-        if (_isCurveControl == false) _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.deltaTime);
+        if (_isCurveControl == false) _targetPosition.x = Mathf.Lerp( TargetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * Time.deltaTime);
     }
 
 
@@ -182,6 +218,8 @@ public class Movement : MonoBehaviour
     {
         _controller = GetComponent<CharacterController>();
         _transform = transform;
+
+        Shader.SetGlobalFloat("_MetroRotation", 0);
     }
 
 
@@ -190,18 +228,74 @@ public class Movement : MonoBehaviour
         if (hit.transform.TryGetComponent<Obstacle>(out var obctacle) || hit.gameObject.CompareTag("Vehicle"))
         {
             Vector3 between = Vector3.zero;
+            Vector3 point = Quaternion.Inverse(_transform.rotation) * hit.point;
 
-            between.x = Mathf.Abs(_transform.position.x - hit.point.x);
-            between.y = Mathf.Abs(_transform.position.y - hit.point.y);
-            between.z = Mathf.Abs(_transform.position.z - hit.point.z);
+            between.x = Mathf.Abs(Position.x - point.x);
+            between.y = Mathf.Abs(Position.y - point.y);
+            between.z = Mathf.Abs(Position.z - point.z);
 
-            if (between.x > between.z * 1.5f && between.x > between.z * 1.5f)
+            if (between.x > between.z * 1.5f)
             {
-                Direction direction = _transform.position.x > hit.point.x ? Direction.Right : Direction.Left;
+                Direction direction = Position.x > point.x ? Direction.Right : Direction.Left;
 
                 Surf(direction);
             }
         }
+    }
+
+
+    public void Turn(Turner turner)
+    {
+        StartCoroutine( RotateAround( turner ));
+
+    }
+
+    public IEnumerator RotateAround( Turner turner )
+    {
+        Direction direction = turner.Direction;
+
+        Vector3 around = turner.transform.position;
+
+        Vector3 offset = turner.Offset.position;
+        Vector3 toCenterDirection = (turner.transform.position - turner.Offset.position) / 2;
+
+        Quaternion rotation = Quaternion.Euler(0, _transform.eulerAngles.y + (direction == Direction.Left ? -90 : 90), 0);
+
+        RegenTrigger.Instance.MoveTo( turner.EndPoint.position );
+        RegenTrigger.Instance.transform.rotation = rotation;
+        
+        isTurning = true;
+
+        RotateProgress = 0;
+
+        _transform.right = new Vector3(_transform.position.x - offset.x, 0, _transform.position.z - offset.z) * (direction == Direction.Left ? 1 : -1);
+
+        Player.Camera.EnableTurnMode(turner);
+
+        Quaternion lastRotation = _transform.rotation;
+
+        while (RotateProgress < 90 )
+        {
+            _turnPosition = Vector3.Lerp( turner.StartPoint.position, turner.EndPoint.position, RotateProgress / 90 ) + toCenterDirection * Mathf.Sin( RotateProgress / 90 * Mathf.PI ) / 2;
+            
+            _transform.right = new Vector3( _transform.position.x - offset.x, 0, _transform.position.z - offset.z) * (direction == Direction.Left ? 1 : -1);
+
+            RotateProgress += (Mathf.Abs(_transform.eulerAngles.y.NormalizeRotation() - lastRotation.eulerAngles.y.NormalizeRotation()));
+
+            if (RotateProgress >= 90) _transform.rotation = rotation;
+
+            lastRotation = _transform.rotation;
+
+            yield return null;
+        }
+
+        _turnPosition = around;
+
+        Player.Camera.DisableTurnMode();
+
+        Shader.SetGlobalFloat("_MetroRotation", rotation.eulerAngles.y);
+
+        isTurning = false;
     }
 
 
@@ -213,8 +307,9 @@ public class Movement : MonoBehaviour
         _isVehicleControl = true;
 
         _velocity.y = 0;
-        _controller.Move( Vector3.up * (-0.25f - _transform.position.y) );
+        _controller.Move( Vector3.up * (-0.5f - Position.y) );
 
+        RepositeCamera?.Invoke(0);
 
         _walkSpeed *= 2f;
     }
@@ -226,7 +321,7 @@ public class Movement : MonoBehaviour
 
         _isVehicleControl = false;
 
-        _line = (RoadLine)( _targetPosition.x / _roadWidth);
+        _line = (RoadLine)( TargetPosition.x / _roadWidth);
         _targetPosition.x = _line.ToInt() * _roadWidth;
         _velocity.z = 30 * Game.Difficulty;
         _velocity.y = 6.7f;
@@ -242,6 +337,7 @@ public class Movement : MonoBehaviour
         _isNeedToEnableCurveControl = true;
 
         Grounded?.Invoke(true);
+        RepositeCamera?.Invoke(0);
 
         Player.Presenter.EnableCurveMode();
     }
@@ -252,7 +348,7 @@ public class Movement : MonoBehaviour
 
         if (isFly)
         {
-            _velocity.y = 6f - _transform.position.y;
+            _velocity.y = 6f - (Position.y * 1.5f);
             
             Player.Presenter.DisableCurveMode();
         }
@@ -260,8 +356,11 @@ public class Movement : MonoBehaviour
         {
             _velocity.z /= Game.Difficulty;
             _velocity.x = 0;
+            _targetPosition.x = _line.ToInt() * (Game.Mode.InVehicleMode ? 1.1f : _roadWidth);
 
             _isControlled = false;
+
+            _controller.stepOffset = 0;
         }
 
         _line = line;
@@ -295,7 +394,7 @@ public class Movement : MonoBehaviour
 
         _velocity.z = 20 * Game.Difficulty;
 
-        Player.Presenter.SetScale(0.55f, 2.5f);
+        Player.Presenter.SetScale(0.7f, 2.5f);
         Player.Presenter.OnJump();
     }
 

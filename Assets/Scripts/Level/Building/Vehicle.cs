@@ -11,6 +11,7 @@ public class Vehicle : Building
     private bool _isLeft = false;
 
     private Vector3 _offset = new Vector3(0f, -0.5f, 0.5f);
+    private Quaternion _rotation;
 
     private Movement _player;
 
@@ -37,12 +38,14 @@ public class Vehicle : Building
         position.x *= _isLeft ? 1 : -1;
 
         _body.localPosition = position;
+
+        _rotation = Quaternion.Inverse(_transform2.rotation);
     }
 
 
     protected void LateUpdate()
     {
-        _body.localPosition = ((_isLeft ? Vector3.right : Vector3.left) * (_playerTransform.position.z - _transform2.position.z)) * _moveIntensive + _offset;
+        _body.localPosition = ((_isLeft ? Vector3.right : Vector3.left) * ((_rotation * _playerTransform.position).z - (_rotation * _transform2.position).z)) * _moveIntensive + _offset;
     }
 
 

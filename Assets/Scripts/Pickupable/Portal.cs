@@ -7,7 +7,7 @@ public class Portal : Placeable
         if (collider.TryGetComponent<Player>(out var player))
         {
             if (IsAlreadyExist)
-                StartPlayerTransition( Mathf.Clamp(-Player.Movement.transform.position.z + transform.position.z, 0.1f, 3) );
+                StartPlayerTransition( Mathf.Clamp((Quaternion.Inverse(Player.Movement.transform.rotation) * transform.position).z - (Quaternion.Inverse(Player.Movement.transform.rotation) * Player.Movement.transform.position).z, 0.1f, 3) );
             else
                 EndPlayerTransition();
         }

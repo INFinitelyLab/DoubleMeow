@@ -1,4 +1,3 @@
-using UnityEngine.SceneManagement;
 using System.Collections;
 using UnityEngine;
 using System;
@@ -12,8 +11,11 @@ public sealed class Game : SingleBehaviour<Game>
     public static float Difficulty { get; private set; } = 1;
 
     public static bool IsActive { get; private set; }
+    public static int Phase { get; private set; }
 
     private static Coroutine _acceleration;
+
+    private const float SpeedUpTime = 10; // In Minutes
 
     // Инициализация
 
@@ -63,7 +65,8 @@ public sealed class Game : SingleBehaviour<Game>
 
         Portal.Reset();
 
-        Difficulty = 1;
+        Difficulty = 0.8f;
+        Phase = 0;
 
         Inputer.Swiped += Instance.OnSwiped;
         Inputer.Draged += Instance.OnDraged;
@@ -94,21 +97,30 @@ public sealed class Game : SingleBehaviour<Game>
     {
         if(IsActive) Stop();
 
-        SceneManager.LoadScene(1);
+        SceneTransiter.TransiteTo(Scene.Game);
     }
 
     public static void Menu()
     {
-        SceneManager.LoadScene(0);
+        SceneTransiter.TransiteTo( Scene.Menu );
     }
 
     private static IEnumerator SpeedUp()
     {
-        while(IsActive)
+        while(Phase == 0)
         {
-            Difficulty = Mathf.MoveTowards( Difficulty, 2, 0.05f );
-
             yield return new WaitForSeconds(10);
+
+            Difficulty = Mathf.MoveTowards( Difficulty, 1.6f, 10 / (SpeedUpTime * 60) );
+
+            if (Difficulty >= 1.4f) Phase = 1;
+        }
+
+        while (Phase == 1)
+        {
+            yield return new WaitForSeconds(10);
+
+            Difficulty = Mathf.MoveTowards(Difficulty, 3.2f, 10 / (SpeedUpTime * 60) / 2);
         }
     }
 

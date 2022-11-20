@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: BananaGames
+  companyName: Default
   productName: Double Meow
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -139,7 +139,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 0.33
+  bundleVersion: 0.6
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -149,7 +149,7 @@ PlayerSettings:
   vrSettings:
     enable360StereoCapture: 0
   isWsaHolographicRemotingEnabled: 0
-  enableFrameTimingStats: 1
+  enableFrameTimingStats: 0
   useHDRDisplay: 0
   D3DHDRBitDepth: 0
   m_ColorGamuts: 00000000
@@ -159,13 +159,13 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.BananaGames.DoubleMeow
+    Android: com.Default.DoubleMeow
     Standalone: com.BananaGames.Double-Meow
   buildNumber:
     Standalone: 0
     iPhone: 0
     tvOS: 0
-  overrideDefaultApplicationIdentifier: 0
+  overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 24
   AndroidTargetSdkVersion: 0
@@ -446,8 +446,8 @@ PlayerSettings:
     m_Devices:
     - Oculus
     - OpenVR
-  openGLRequireES31: 0
-  openGLRequireES31AEP: 0
+  openGLRequireES31: 1
+  openGLRequireES31AEP: 1
   openGLRequireES32: 1
   m_TemplateCustomTags: {}
   mobileMTRendering:
@@ -474,7 +474,7 @@ PlayerSettings:
     m_TextureStreamingPriority: 0
   m_BuildTargetNormalMapEncoding:
   - m_BuildTarget: Android
-    m_Encoding: 0
+    m_Encoding: 1
   - m_BuildTarget: iPhone
     m_Encoding: 1
   - m_BuildTarget: tvOS

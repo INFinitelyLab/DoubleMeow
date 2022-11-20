@@ -12,7 +12,7 @@ public class SolarPanel : Placeable
     }
 
 
-    protected void Update()
+    private void Update()
     {
         if(isActive) transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, 5 * Time.deltaTime);
     }

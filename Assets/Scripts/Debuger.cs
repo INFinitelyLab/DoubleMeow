@@ -1,11 +1,13 @@
 using UnityEngine;
 using TMPro;
-using System.Diagnostics;
 using System.Text;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 
 public class Debuger : MonoBehaviour
 {
+    public string selectedSkin;
+
     public TextMeshProUGUI text;
     public GameObject _generation;
 
@@ -26,6 +28,12 @@ public class Debuger : MonoBehaviour
         _asset.renderScale = factor;
     }
 
+    [ContextMenu("Reselect Skin")]
+    public void SelectSkin()
+    {
+        Stats.SelectSkin(selectedSkin);
+    }
+
 
     void Start()
     {
@@ -42,6 +50,8 @@ public class Debuger : MonoBehaviour
         UpdateInfo();
 
         Destroy(_generation);
+
+        GraphicsSettings.useScriptableRenderPipelineBatching = true;
     }
 
 

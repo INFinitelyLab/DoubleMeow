@@ -131,6 +131,25 @@ public static class Extentions
     {
         return value.ToString().Length;
     }
+
+
+    public static float NormalizeRotation(this float value)
+    {
+        value = value % 360;
+
+        if (value > 180) value = 360 - value;
+
+        return value < 0 ? -value : value;
+    }
+
+
+    public static Vector3 DoubleLerp(this Vector3 start, Vector3 between, Vector3 end, float time)
+    {
+            if (time <= 1)
+                return Vector3.LerpUnclamped(start, between, time);
+            else
+                return Vector3.LerpUnclamped(between, end, time - 1);
+    }
 }
 
 public static class PlayerPrefsExtentions

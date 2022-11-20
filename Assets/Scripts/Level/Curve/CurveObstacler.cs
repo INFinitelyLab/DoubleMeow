@@ -1,25 +1,25 @@
+using System.Collections;
 using UnityEngine;
 
 public class CurveObstacler : ObstaclerBase
 {
     [SerializeField] protected SolarPanel dynamicSolarPanelPrefab;
     [SerializeField] protected Milk milk;
+    [SerializeField] private Vector2 _cellSize;
+
+    private static CurveObstacler _obstacler;
 
     protected Cell[,] Cells;
 
 
     public RoadLine Generate(Curve curve, RoadLine startLine)
     {
-        RoadLine endLine = startLine;
-
         Vector2Int size = curve.GetSize();
 
         Cells = new Cell[size.x, size.y];
 
-        Debug.Log("Size : " + size);
-
         GenerateSolarPanels(curve);
-        GenerateMilk(curve);
+        GenerateMilk(curve, startLine, out RoadLine endLine);
 
         return endLine;
     }
@@ -27,35 +27,52 @@ public class CurveObstacler : ObstaclerBase
 
     private void GenerateSolarPanels(Curve curve)
     {
-        int iterations = Random.Range(0, 3);
+        int length = curve.PositionsForSolarPanels.Length;
 
-
-        for(int index = 0; index < iterations; index++)
+        for (int index = 0; index < length; index++)
         {
-            Transform point = curve.PositionsForSolarPanels.Random();
+            Transform point = curve.PositionsForSolarPanels[index];
 
-            Vector2Int position = new Vector2Int( Mathf.RoundToInt(point.transform.localPosition.x * 1.5f), Mathf.RoundToInt(point.transform.localPosition.z / 0.746f) );
-
-            if(Cells[position.x + 2, position.y] == null)
-            {
-                Cells[position.x + 2, position.y] = new Cell(CreatePlaceable( dynamicSolarPanelPrefab, Vector3.zero, point ));
-            }
-        }
-
-        int Length = curve.PositionsForStaticSolarPanels.Length;
-
-        for(int index = 0; index < Length; index ++)
-        {
-            Transform point = curve.PositionsForStaticSolarPanels[index];
-
-            Vector2Int position = new Vector2Int(Mathf.RoundToInt(point.transform.localPosition.x * 1.5f), Mathf.RoundToInt(point.transform.localPosition.z / 0.746f));
-
-            Cells[position.x + 2, position.y] = new Cell(CreatePlaceable(dynamicSolarPanelPrefab, Vector3.zero, point));
+            if (Mathf.Abs(point.localPosition.x) > 0.1f || Random.Range(0, 2) == 0)
+                CreatePlaceable( dynamicSolarPanelPrefab, Vector3.zero, point );
         }
     }
 
+    private void GenerateMilk(Curve curve, RoadLine startLine, out RoadLine endLine)
+    {
+        Vector2Int size = curve.GetSize();
 
-    private void GenerateMilk(Curve curve)
+        RoadLine line = startLine;
+
+        for( int y = 0; y < size.y; y++ )
+        {
+            /// === Check for surf line === //
+            if( curve.GetTileID( new Vector2Int( (int)line + 1, y ) ) == 0 )
+            {
+                int surfDirections = 0;
+
+                if (curve.GetTileID(new Vector2Int((int)line, y)) == 1)
+                    surfDirections += 1;
+                if (curve.GetTileID(new Vector2Int((int)line + 2, y)) == 1)
+                    surfDirections += 2;
+
+                if (surfDirections == 3)
+                    line.TrySurfRandom();
+                else
+                    line.TrySurf( surfDirections == 1? Direction.Left : Direction.Right );
+            }
+
+            Vector3 position = new Vector3((int)line * -_cellSize.x * 0.7f, line == RoadLine.Venus ? 0 : 0.4f, y * _cellSize.y + (_cellSize.y / 4));
+
+            CreatePlaceable(milk, position - Vector3.forward * 0.25f, curve.transform);
+            CreatePlaceable(milk, position + Vector3.forward * 0.25f, curve.transform);
+        }
+
+        endLine = line;
+    }
+
+
+    private void OldGenerateMilk(Curve curve)
     {
         int count = curve.PositionsForSolarPanels.Length;
 
@@ -63,54 +80,28 @@ public class CurveObstacler : ObstaclerBase
         {
             Vector2Int xy = new Vector2Int( Mathf.RoundToInt(curve.PositionsForSolarPanels[index].localPosition.x * 1.5f), Mathf.RoundToInt((curve.PositionsForSolarPanels[index].localPosition.z - 0.5f) / 0.746f) - 1 );
 
-            Debug.Log("Position : " + xy);
-
-            if (xy.y < 3) continue;
+            if (xy.y < 4) continue;
 
             int length = Random.Range(3, 7);
 
             for( int j = 0; j < length; j++ )
             {
-                if (curve.GetTileID(new Vector2Int(xy.x +2, xy.y)) == 0) break;
+                if (curve.GetTileID(new Vector2Int(xy.x + 2, xy.y)) == 0) break;
 
-                Vector3 position = new Vector3(xy.x / 1.25f, 0.7f - Mathf.Cos(xy.x / 1.05f) * 0.5f, xy.y * 0.746f + 0.5f);
+                float x = Mathf.Pow(Mathf.Abs(xy.x), 0.65f) * (xy.x < 0? -0.8f : 0.8f);
 
-                Debug.Log("Position : " + xy);
+                Vector3 position = new Vector3( x == float.NaN? 0 : x, 1.1f - Mathf.Cos(xy.x / 1.05f / 1.65f), xy.y * 0.746f + 0.5f);
 
-                Cells[xy.x + 2, xy.y] = new Cell(CreatePlaceable(milk, position, curve.transform));
+                Placeable placeable = CreatePlaceable(milk, position, curve.transform);
 
-                xy.y--;
-            }
+                placeable.transform.localRotation = Quaternion.Euler(0,0, xy.x * 25);
 
-            index += Random.Range(0, 4);
-        }
-
-        count = curve.PositionsForStaticSolarPanels.Length;
-
-        for (int index = 0; index < count; index++)
-        {
-            Vector2Int xy = new Vector2Int(Mathf.RoundToInt(curve.PositionsForStaticSolarPanels[index].localPosition.x * 1.75f), Mathf.RoundToInt((curve.PositionsForStaticSolarPanels[index].localPosition.z - 0.5f) / 0.746f) - 1);
-
-            Debug.Log("Position : " + xy);
-
-            if (xy.y < 3) continue;
-
-            int length = Random.Range(3, 7);
-
-            for (int j = 0; j < length; j++)
-            {
-                if (curve.GetTileID(new Vector2Int(xy.x + 2, xy.y)) == 0 || Cells[xy.x + 2, xy.y] != null) break;
-
-                Vector3 position = new Vector3(xy.x / 1.5f, 0.7f - Mathf.Cos(xy.x / 1.05f) * 0.5f, xy.y * 0.746f + 0.5f);
-
-                Debug.Log("Position : " + xy);
-
-                Cells[xy.x + 2, xy.y] = new Cell(CreatePlaceable(milk, position, curve.transform));
+                Cells[xy.x + 2, xy.y] = new Cell(placeable);
 
                 xy.y--;
             }
 
-            index += Random.Range(0, 4);
+            index += Random.Range(0, 3);
         }
     }
 

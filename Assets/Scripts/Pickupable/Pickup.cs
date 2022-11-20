@@ -4,6 +4,7 @@ using UnityEngine;
 public abstract class Pickup : Placeable
 {
     public abstract bool IsCanPlace { get; }
+    [SerializeField] protected bool DestroyAfterPickup = true;
 
 
     private void OnTriggerEnter(Collider other)
@@ -12,7 +13,7 @@ public abstract class Pickup : Placeable
         {
             OnPickup();
 
-            Destroy(gameObject);
+            if (DestroyAfterPickup) Destroy(gameObject);
         }
     }
 

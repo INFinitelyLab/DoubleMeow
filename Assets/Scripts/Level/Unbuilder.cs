@@ -6,7 +6,7 @@ public class Unbuilder : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        if( other.transform.TryGetComponent<Building>(out var building) || other.transform.TryGetComponent<DecorationBuilding>(out var decor) )
+        if( other.transform.TryGetComponent<Building>(out var building) || other.transform.TryGetComponent<DecorationBuilding>(out var decor) || other.transform.TryGetComponent<Milk>(out var milk))
         {
             Destroy(other.transform.gameObject);
         }
