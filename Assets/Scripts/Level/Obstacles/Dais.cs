@@ -16,4 +16,8 @@ public class Dais : Obstacle
 
         return true;
     }
+
+    public override void EnableCollision() { }
+
+    public override void DisableCollision() { }
 }

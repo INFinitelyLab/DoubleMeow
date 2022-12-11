@@ -5,6 +5,9 @@ public class Obstacle : Placeable, IGroundeable
     [SerializeField, Multiline] private string _tiles;
     [SerializeField] private Vector2Int _size;
 
+    private Collider _collider;
+
+
     public string Tiles => _tiles;
     public Vector2Int Size => _size;
     public bool[,] IsEmpty;
@@ -26,6 +29,25 @@ public class Obstacle : Placeable, IGroundeable
 
 
     public virtual bool IsCanPlaceHere(Building building, ObstaclerBase.LargeCell[,] depthTiles, int x, int y, Obstacler.PortalPosition portalPosition) { return true; }
+
+
+    public virtual void DisableCollision()
+    {
+        _collider.enabled = false;
+    }
+
+    public virtual void EnableCollision()
+    {
+        _collider.enabled = true;
+    }
+
+    public void Awake()
+    {
+        _collider = GetComponentsInChildren<Collider>()[0];
+
+        if (Game.Mode.InInvincibilityMode == true)
+            DisableCollision();
+    }
 }
 
 

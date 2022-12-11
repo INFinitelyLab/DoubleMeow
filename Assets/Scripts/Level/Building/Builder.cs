@@ -6,7 +6,7 @@ using System;
 
 using Random = UnityEngine.Random;
 
-public class Builder : MonoBehaviour
+public class Builder : SingleBehaviour<Builder>
 {
     [SerializeField] private List<Building> _prefabs;
     [SerializeField] private List<DecorationBuilding> _decoPrefabs;
@@ -14,8 +14,10 @@ public class Builder : MonoBehaviour
     [SerializeField] private Building _startBuilding;
     [SerializeField] private Building _bridge;
     [SerializeField] private Building _vehicle;
+    [SerializeField] private Building _train;
     [SerializeField] private Building _buildingWhoTurnLeft;
     [SerializeField] private Building _buildingWhoTurnRight;
+    [SerializeField] private LoseTrigger _loseTrigger;
     [SerializeField] private float _vehiclePropastWidth;
 
     [SerializeField] private Transform _startPoint;
@@ -48,6 +50,7 @@ public class Builder : MonoBehaviour
 
     private bool _isNeedToTurn;
 
+    private Vector3 _lastBuildingPosition;
 
     private float _totalVehicleWidth;
 
@@ -65,10 +68,31 @@ public class Builder : MonoBehaviour
     private Building _lastBuilding;
     private bool IsCanPlaceEr => _isNeedToEnableCurveMode == false && _isNeedToEnableMetroMode == false && _isNeedToEnableTilerMode == false;
 
+    private List<Building> _buildingAfterHulkPickup;
+    private bool _isNeedToRecordBuildings = false;
+
     
     public void Rotate(bool isLeft)
     {
         _rotation.eulerAngles += new Vector3(0, isLeft? -90 : 90, 0);
+    }
+
+
+    public void CreateBuildingFrom(Vector3 position)
+    {
+        Portal.Reset();
+
+        _height = 0;
+        _nextHeight = 0;
+        _nextBuildingIsVehicle = false;
+
+        CreateNewBuilding(_startBuilding, false, position + _rotation * Vector3.forward * 5);
+
+        //Debug.Log("Hello world : " + position);
+
+        _trigger.MoveTo(position + _rotation * Vector3.forward * 5);
+
+        Regenerate();
     }
 
 
@@ -87,13 +111,13 @@ public class Builder : MonoBehaviour
     }
 
 
-    private void OnEnable()
+    protected override void OnActive()
     {
         _trigger.Triggered += Regenerate;
     }
 
 
-    private void OnDisable()
+    protected override void OnDisactive()
     {
         _trigger.Triggered -= Regenerate;
     }
@@ -103,18 +127,19 @@ public class Builder : MonoBehaviour
 
     private void Regenerate(bool isStartTile)
     {
+        if (isActiveAndEnabled == false) return;
+
         Vector3 currentPlayerPosition = Player.Movement.transform.position;
         Vector3 lastBuildingPosition = _lastBuilding.transform.position;
 
-        while ( Vector3.Distance(currentPlayerPosition, lastBuildingPosition) < _distanceForDecoBuildings - _totalVehicleWidth)
+        while ( Vector3.Distance(currentPlayerPosition, lastBuildingPosition) < _distanceForDecoBuildings)
         {
-
             _pastBuilding = _currentBuilding;
-            _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? _vehicle : PickRandomBuilding(_endLine, _nextBuildingIsVehicle, _vehicle));
+            _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? (Random.Range(0,2) == 1? _vehicle : _train) : PickRandomBuilding(_endLine, _nextBuildingIsVehicle, _vehicle));
 
-            _nextBuildingIsVehicle = GetVehicleIfRandom();
+            _nextBuildingIsVehicle = (Game.Mode.InParachuteMode || Game.Mode.InxAxIxRxMode? false : GetVehicleIfRandom());
 
-            if (_currentBuilding != _vehicle && _pastBuilding != _vehicle && Portal.IsWaitingForSecondPortal == false)
+            if (_currentBuilding != _train && _pastBuilding != _train && _currentBuilding != _vehicle && _pastBuilding != _vehicle && Portal.IsWaitingForSecondPortal == false)
             {
                 if ( _isNeedToTurn == false && IsCanPlaceEr == true)
                 {
@@ -142,7 +167,7 @@ public class Builder : MonoBehaviour
             {
                 CreateNewBuilding(_currentBuilding, isStartTile);
 
-                if (_currentBuilding == _vehicle)
+                if (_currentBuilding == _vehicle || _currentBuilding == _train)
                 {
                     _pastBuilding = _currentBuilding;
                     _pastBuildingIsVehicle = true;
@@ -197,16 +222,11 @@ public class Builder : MonoBehaviour
         Building building = Instantiate( origin );
 
 
-        if (isStartBuilding == false && origin != _vehicle)
-        {
-            _endLine = _obstacler.Generate(building, _endLine, (_height < _nextHeight && _nextBuildingIsVehicle == false) || isNeedToRise , origin == _bridge);
-        }
-
         if (isStartBuilding == false)
         {
             building.transform.localRotation = _rotation;
 
-            if (origin == _vehicle)
+            if (origin == _vehicle || origin == _train)
                 building.transform.localPosition = (from == default? new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) : from) + (_rotation * Vector3.forward * ((_vehiclePropastWidth + 1) * Game.Difficulty - 1)) + Vector3.up * _height * 1f;
             else
                 building.transform.localPosition = (from == default ? new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) : from) + (_rotation * Vector3.forward * ((_currentBuilding.IsNearly || _pastBuilding.IsNearly) ? 0 : (((_buildingWidth + 1 + building.PlaceOffset) * Game.Difficulty) - 1))) + Vector3.up * _height * 1f;
@@ -214,6 +234,11 @@ public class Builder : MonoBehaviour
         else
         {
             building.transform.localPosition = _startPoint.localPosition;
+        }
+
+        if (isStartBuilding == false && origin != _vehicle)
+        {
+            _endLine = _obstacler.Generate(building, _endLine, (_height < _nextHeight && _nextBuildingIsVehicle == false) || isNeedToRise, origin == _bridge);
         }
 
         if (isStartBuilding == false)
@@ -230,10 +255,10 @@ public class Builder : MonoBehaviour
             }
         }
 
-        if (origin != _vehicle)
+        if (origin != _vehicle && origin != _train)
         {
             if (origin != _buildingWhoTurnLeft && origin != _buildingWhoTurnRight)
-                _decoEndPoint = Building.PlaceDecorations(_height, _decoEndPoint, building.transform.position, _rotation, building.EndPoint.localPosition.z, _decoPrefabs, (_pastBuilding == _vehicle ? 2 : 0) + (_nextBuildingIsVehicle ? 1 : 0));
+                _decoEndPoint = Building.PlaceDecorations(_height, _decoEndPoint, building.transform.position, _rotation, building.EndPoint.localPosition.z, _decoPrefabs, (_pastBuilding == _vehicle || _pastBuilding == _train? 2 : 0) + (_nextBuildingIsVehicle ? 1 : 0));
             else
                 _decoEndPoint = Building.PlaceDecorationsForTurn(_height, _decoEndPoint, building.GetComponentsInChildren<Turner>()[0], building.transform.position, _rotation, _decoPrefabs, _decoTurnPrefab, origin == _buildingWhoTurnLeft );
 
@@ -246,9 +271,55 @@ public class Builder : MonoBehaviour
             _totalVehicleWidth += _vehicle.EndPoint.localPosition.z + _vehiclePropastWidth;
         }
 
+        if (_isNeedToRecordBuildings)
+        {
+            if (_buildingAfterHulkPickup.Count > 9)
+                _isNeedToRecordBuildings = false;
+            else
+                _buildingAfterHulkPickup.Add( building );
+        }
+
+        CreateLoseTrigger(_lastBuildingPosition, building.transform.position, building.transform);
+
         _lastBuilding = building;
+        _lastBuildingPosition = building.EndPoint.position;
 
         return building;
+    }
+
+
+    private void CreateLoseTrigger(Vector3 startPosition, Vector3 endPosition, Transform parent)
+    {
+        Vector3 losePosition = (startPosition + endPosition) / 2;
+        Vector3 loseSize = new Vector3(3, 3, Vector3.Distance(startPosition, endPosition));
+
+        losePosition.y = Mathf.Min(startPosition.y, endPosition.y) - 1.5f;
+
+        LoseTrigger trigger = Instantiate(_loseTrigger, parent);
+
+        trigger.transform.position = losePosition;
+        trigger.transform.localScale = loseSize;
+        trigger.transform.rotation = _rotation;
+    }
+
+
+    public void DeleteAllRegeneratePoints()
+    {
+        RegeneratePoint[] points = FindObjectsOfType<RegeneratePoint>();
+
+        foreach(RegeneratePoint point in points)
+        {
+            Destroy(point.gameObject);
+        }
+    }
+
+
+    public void DestroyAllBuilding()
+    {
+        foreach(Building building in FindObjectsOfType<Building>(true))
+        {
+            Destroy( building.gameObject );
+        }
     }
 
 
@@ -314,6 +385,26 @@ public class Builder : MonoBehaviour
     }
 
 
+    public void DisableAllObstacles()
+    {
+        Obstacle[] obstacles = FindObjectsOfType<Obstacle>();
+
+        foreach(Obstacle obstacle in obstacles)
+        {
+            obstacle.DisableCollision();
+        }
+    }
+
+    public void EnableAllObstacles()
+    {
+        Obstacle[] obstacles = FindObjectsOfType<Obstacle>();
+
+        foreach(Obstacle obstacle in obstacles)
+        {
+            obstacle.EnableCollision();
+        }
+    }
+
 
     private void EnableMetroGeneration()
     {
@@ -352,7 +443,7 @@ public class Builder : MonoBehaviour
 
     public bool IsCanPlaceMetro()
     {
-        return (_isNeedToEnableMetroMode && _height == 0 && _nextHeight == _height && _currentBuilding != _vehicle && Portal.IsWaitingForSecondPortal == false);
+        return (Game.Mode.InxAxIxRxMode == false && Rocket.IsAlreadyExist == false && _isNeedToEnableMetroMode && _height == 0 && _nextHeight == _height && _currentBuilding != _vehicle && Portal.IsWaitingForSecondPortal == false);
     }
 
 
@@ -384,7 +475,7 @@ public class Builder : MonoBehaviour
 
     public bool IsCanPlaceTiler()
     {
-        return (_isNeedToEnableTilerMode && _nextHeight == _height && _height == 0 && _currentBuilding == _startBuilding && Portal.IsWaitingForSecondPortal == false);
+        return (Game.Mode.InxAxIxRxMode == false && Rocket.IsAlreadyExist == false && _isNeedToEnableTilerMode && _nextHeight == _height && _height == 0 && _currentBuilding == _startBuilding && Portal.IsWaitingForSecondPortal == false);
     }
 
 
@@ -416,7 +507,7 @@ public class Builder : MonoBehaviour
 
     public bool IsCanPlaceCurve()
     {
-        return (_isNeedToEnableCurveMode && _height == 0 && _nextHeight == 0 && Portal.IsWaitingForSecondPortal == false);
+        return (Game.Mode.InxAxIxRxMode == false && Rocket.IsAlreadyExist == false && _isNeedToEnableCurveMode && _height == 0 && _nextHeight == 0 && Portal.IsWaitingForSecondPortal == false);
     }
 
 
@@ -447,7 +538,7 @@ public class Builder : MonoBehaviour
     {
         bool isLeft = Random.Range(0, 2) == 0;
 
-        CreateNewBuilding( isLeft? _buildingWhoTurnLeft : _buildingWhoTurnRight, false );
+        _lastBuilding = CreateNewBuilding( isLeft? _buildingWhoTurnLeft : _buildingWhoTurnRight, false );
         Rotate( isLeft );
     }
 
@@ -458,7 +549,15 @@ public class Builder : MonoBehaviour
 
     public bool IsCanPlaceTurn()
     {
-        return ( Portal.IsWaitingForSecondPortal == false && _height == _nextHeight && _isNeedToTurn );
+        return (Game.Mode.InxAxIxRxMode == false && Rocket.IsAlreadyExist == false && Portal.IsWaitingForSecondPortal == false && _height == _nextHeight && _isNeedToTurn );
+    }
+
+
+    public void PrepareHulkGeneration()
+    {
+        _buildingAfterHulkPickup = new List<Building>(10);
+
+        _isNeedToRecordBuildings = true;
     }
 
 
@@ -482,39 +581,14 @@ public class Builder : MonoBehaviour
     }
 
 
-    private IEnumerator ErLoop()
-    {
-        yield return new WaitForSeconds(5);
-
-        _nextErIndex = Random.Range(0,3);
-
-
-        while(Game.IsActive)
-        {
-            StartNextEr();
-
-            yield return new WaitUntil(() => IsCanPlaceEr == true);
-            yield return new WaitForSeconds(10 * Game.Difficulty);
-
-            StartNextEr();
-
-            yield return new WaitUntil(() => IsCanPlaceEr == true);
-            yield return new WaitForSeconds(10 * Game.Difficulty);
-
-            _isNeedToTurn = true;
-
-            yield return new WaitUntil(() => _isNeedToTurn == false);
-            yield return new WaitForSeconds(10 * Game.Difficulty);
-        }
-    }
-
-
     private IEnumerator WaitForActive(Transform building)
     {
         bool isActive = false;
 
         while( isActive == false )
         {
+            if (building == null) yield break;
+
             if ( Mathf.Abs(_player.position.z - building.position.z) < _distanceForBuildings )
             {
                 isActive = true;
@@ -524,5 +598,62 @@ public class Builder : MonoBehaviour
 
             yield return new WaitForSeconds(0.5f);
         }
+    }
+
+
+
+    // Er loop (я хреновый архитектор кода, иди в жопу!)
+
+
+
+    private float _erLoopTimer;
+    private bool _erLoopTimerIsTicking = true;
+
+    private IEnumerator ErLoop()
+    {
+        yield return new WaitForSeconds(5);
+
+        _nextErIndex = Random.Range(0, 3);
+
+        while (isActiveAndEnabled)
+        {
+            _isNeedToTurn = true;
+
+            yield return new WaitUntil(() => _isNeedToTurn == false);
+            yield return StartCoroutine(WaitTimer(10));
+
+            //StartNextEr();
+            _isNeedToEnableMetroMode = true;
+
+            yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return StartCoroutine(WaitTimer(10));
+
+            StartNextEr();
+
+            yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return StartCoroutine(WaitTimer(10));
+        }
+    }
+
+    private IEnumerator WaitTimer(float duration)
+    {
+        _erLoopTimer = duration;
+
+        while (_erLoopTimer > 0 )
+        {
+            if (_erLoopTimerIsTicking == true) _erLoopTimer -= Time.deltaTime;
+
+            yield return null;
+        }
+    }
+
+    public void CancelErLoopTimer()
+    {
+        _erLoopTimerIsTicking = false;
+    }
+
+    public void ContinueErLoopTimer()
+    {
+        _erLoopTimerIsTicking = true;
     }
 }

@@ -84,7 +84,7 @@ public class Player : SingleBehaviour<Player>, IGroundeable
     }
 
 
-    private void OnBumped(Direction direction)
+    private void OnBumped(Direction direction, bool isNeedToDisactiveCamera)
     {
         if( direction == Direction.Up )
         {
@@ -92,7 +92,7 @@ public class Player : SingleBehaviour<Player>, IGroundeable
             {
                 Stats.OnDeath();
 
-                Game.Stop();
+                Game.Stop(isNeedToDisactiveCamera);
                 Presenter.OnBumped();
             }
         }

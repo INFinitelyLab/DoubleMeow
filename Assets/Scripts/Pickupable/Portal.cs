@@ -6,7 +6,7 @@ public class Portal : Placeable
     {
         if (collider.TryGetComponent<Player>(out var player))
         {
-            if (IsAlreadyExist)
+            if (IsAlreadyExist || IsCanPlace)
                 StartPlayerTransition( Mathf.Clamp((Quaternion.Inverse(Player.Movement.transform.rotation) * transform.position).z - (Quaternion.Inverse(Player.Movement.transform.rotation) * Player.Movement.transform.position).z, 0.1f, 3) );
             else
                 EndPlayerTransition();
@@ -33,8 +33,8 @@ public class Portal : Placeable
     public static bool IsAlreadyTransite => State == PortalState.Transite;
     public static bool IsWaitingForSecondPortal => State == PortalState.WaitingForSecondPortal;
 
-    private static PortalState State;
-    private static Vector3 SecondPortalPosition;
+    private static PortalState State = PortalState.None;
+    private static Vector3 SecondPortalPosition = Vector3.zero;
 
 
     public static void TakeSecondPortalPosition(Vector3 position)
@@ -55,7 +55,7 @@ public class Portal : Placeable
         {
             TakeSecondPortalPosition(position);
         }
-        else if (State == PortalState.None)
+        else
         {
             State = PortalState.WaitingForSecondPortal;
         }

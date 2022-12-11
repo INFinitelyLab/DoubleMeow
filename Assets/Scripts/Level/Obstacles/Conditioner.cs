@@ -8,13 +8,13 @@ public class Conditioner : MonoBehaviour
 
     private void Awake()
     {
-        _rotor.transform.rotation = Quaternion.Euler(0,0, Random.Range(0,360) );
+        _rotor.transform.localRotation = Quaternion.Euler(0,0, Random.Range(0,360) );
         _rotateSpeed *= Random.Range(0.5f, 1.5f);
     }
 
 
     private void Update()
     {
-        _rotor.transform.rotation *= Quaternion.Euler(0,0,_rotateSpeed * Time.deltaTime);
+        _rotor.transform.localRotation *= Quaternion.Euler(0,0,_rotateSpeed * Time.deltaTime);
     }
 }

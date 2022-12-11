@@ -124,7 +124,7 @@ public class Metroer : MonoBehaviour
                     if (_vehicleLine != RoadLine.Venus && rand != 1) CreateNewVehicle(_vehicle, _startPosition + _rotation * new Vector3(0, 0, Random.Range(0f, 0.75f)+ _vehicleDistance + _distanceBetweenVehicles), _rotation, RoadLine.Venus);
                     if (_vehicleLine != RoadLine.Earth && rand != 2) CreateNewVehicle(_vehicle, _startPosition + _rotation * new Vector3(1 * _vehicleXOffset, 0, Random.Range(0f, 0.75f) + _vehicleDistance + _distanceBetweenVehicles), _rotation, RoadLine.Venus);
 
-                Vector3 position = new Vector3((int)_pastVehicleLine * _vehicleXOffset, -0.2f, _vehicleDistance + (_distanceBetweenVehicles / 2));
+                Vector3 position = new Vector3((int)_pastVehicleLine * _vehicleXOffset, -0.5f, _vehicleDistance + (_distanceBetweenVehicles / 2));
 
                 float stepIntensityZ = _distanceBetweenVehicles / _milkCount;
 

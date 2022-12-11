@@ -56,6 +56,7 @@ MonoBehaviour:
   _maxIdentityCount: 3
   _isPortalFriendly: 0
   _isObstacleInCenter: 0
+  _placeOffset: 0
   _moveSpeed: 0.7
   _body: {fileID: 1660190175057981294}
 --- !u!1 &7467164430301919259
@@ -153,5 +154,5 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.010329545, y: 0.020077052, z: 0.0057063843}
-  m_Center: {x: -0.00003295541, y: 0.0005432141, z: -0.0014239654}
+  m_Size: {x: 1, y: 1, z: 2}
+  m_Center: {x: 0, y: -0.025, z: 0}

@@ -83,6 +83,8 @@ MonoBehaviour:
     00000'
   _maxIdentityCount: 3
   _isPortalFriendly: 0
+  _isObstacleInCenter: 0
+  _placeOffset: 0
   _positionsForSolarPanels: []
 --- !u!1 &2077647515750220545
 GameObject:
@@ -321,7 +323,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 10, y: 10, z: 5.730072}
+  m_Size: {x: 10, y: 100, z: 5.730072}
   m_Center: {x: 0, y: 0, z: 2.365036}
 --- !u!114 &8613558070609988152
 MonoBehaviour:

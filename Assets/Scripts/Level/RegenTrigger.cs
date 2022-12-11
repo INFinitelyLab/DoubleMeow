@@ -6,9 +6,9 @@ public class RegenTrigger : SingleBehaviour<RegenTrigger>
     public System.Action Triggered;
 
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        if( other.TryGetComponent<Player>(out var player) )
+        if (other.TryGetComponent<Player>(out var player))
         {
             Triggered?.Invoke();
         }

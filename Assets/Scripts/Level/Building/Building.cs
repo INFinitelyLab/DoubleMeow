@@ -31,6 +31,7 @@ public class Building : MonoBehaviour, IGroundeable
     public bool IsPortalFriendly => _isPortalFriendly;
     public bool IsObstacleInCenter => _isObstacleInCenter;
     public float PlaceOffset => _placeOffset;
+    
 
     private static float DecorationBuildingHeight = 5f;
     private static float DecorationBuildingDistanceToBuilding = 4;
@@ -164,7 +165,7 @@ public class Building : MonoBehaviour, IGroundeable
 
         if (originBetween != null)
         {
-            DecorationBuilding between = Instantiate(originBetween, position + rotation * new Vector3(isLeft? -2.16f : 2.16f, 3.73f, 19.17f), Quaternion.Euler(0, rotation.eulerAngles.y - 90, 0));
+            DecorationBuilding between = Instantiate(originBetween, position + rotation * new Vector3(isLeft? -2.16f : 2.16f, 3.73f, 22.17f), Quaternion.Euler(0, rotation.eulerAngles.y - 90, 0));
             between.transform.localScale = new Vector3(-1, 1, isLeft ? 1 : -1);
         }
 
@@ -181,7 +182,7 @@ public class Building : MonoBehaviour, IGroundeable
 
         //=== Outside building's ===//
 
-        float currentPoint = 7;
+        float currentPoint = 10;
 
         DecorationBuilding building = null;
         DecorationBuilding origin = _prefabs.Where(p => p.Width < currentPoint - startPoint).ToList().Random();
@@ -207,7 +208,7 @@ public class Building : MonoBehaviour, IGroundeable
 
         building = null;
         origin = _prefabs.Where(p => p.Width < 13 - currentPoint).ToList().Random();
-        offset = new Vector3( (currentPoint) * (isLeft? -1 : 1), (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), DecorationBuildingDistanceToBuilding + 12 );
+        offset = new Vector3( (currentPoint) * (isLeft? -1 : 1), (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), DecorationBuildingDistanceToBuilding + 16 );
 
         while( origin != null )
         {

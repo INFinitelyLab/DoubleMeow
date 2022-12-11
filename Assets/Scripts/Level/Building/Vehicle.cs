@@ -13,7 +13,7 @@ public class Vehicle : Building
     private Vector3 _offset = new Vector3(0f, -0.5f, 0.5f);
     private Quaternion _rotation;
 
-    private Movement _player;
+    private Transform _player;
 
     private Transform _playerTransform;
     private Transform _transform2;
@@ -28,7 +28,7 @@ public class Vehicle : Building
             _body.localScale = new Vector3(-1, 1, 1);
         }
 
-        _player = Player.Movement;
+        _player = Player.Presenter.transform;
         _playerTransform = _player.transform;
         _transform2 = transform;
 

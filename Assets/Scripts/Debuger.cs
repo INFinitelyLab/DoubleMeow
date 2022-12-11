@@ -1,15 +1,18 @@
 using UnityEngine;
+using UnityEditor;
 using TMPro;
 using System.Text;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
 
-public class Debuger : MonoBehaviour
+public class Debuger : SingleBehaviour<Debuger>
 {
     public string selectedSkin;
 
     public TextMeshProUGUI text;
     public GameObject _generation;
+
+    public GameObject losePanel;
 
     public float updateInterval = 0.5F;
     private double lastInterval;
@@ -21,6 +24,16 @@ public class Debuger : MonoBehaviour
 
     public UniversalRenderPipelineAsset _asset;
 
+
+    public void OnGameEnd()
+    {
+        Invoke("_OnGameEnd", 1);
+    }
+
+    private void _OnGameEnd()
+    {
+        losePanel.SetActive(true);
+    }
 
 
     public void OnRescale(float factor)
@@ -109,4 +122,28 @@ public class Debuger : MonoBehaviour
     {
         _asset.renderScale = 1;
     }
+
+#if UNITY_EDITOR
+    [MenuItem("Milks/Get Free 100 Milks!")]
+    private static void GetFree100Coins() => GetFreeCoins(100);
+
+    [MenuItem("Milks/Get Free 1000 Milks!")]
+    private static void GetFree1000Coins() => GetFreeCoins(1000);
+
+    [MenuItem("Milks/Get Free 10000 Milks!")]
+    private static void GetFree10000Coins() => GetFreeCoins(10000);
+
+    [MenuItem("Milks/Get Free 100000 Milks!")]
+    private static void GetFree100000Coins() => GetFreeCoins(100000);
+
+
+    private static void GetFreeCoins(int coinsCount)
+    {
+        Stats.Load();
+
+        Stats.IncreaseCoin(coinsCount);
+
+        Stats.Save();
+    }
+#endif
 }

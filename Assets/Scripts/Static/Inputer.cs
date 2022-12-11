@@ -4,7 +4,7 @@ using System;
 public sealed class Inputer : SingleBehaviour<Inputer>
 {
     public static Action<Direction> Swiped;
-    public static Action<float> Draged;
+    public static Action<float, float> Draged;
 
 
     private void OnEnable()
@@ -23,7 +23,7 @@ public sealed class Inputer : SingleBehaviour<Inputer>
 
     private void OnSwiped(Direction direction) => Swiped?.Invoke(direction);
 
-    private void OnDraged(float intensive) => Draged?.Invoke(intensive * Time.deltaTime);
+    private void OnDraged(float horizontal, float vertical) => Draged?.Invoke(horizontal, vertical);
 
 
     private void Update()
@@ -41,9 +41,6 @@ public sealed class Inputer : SingleBehaviour<Inputer>
         if (Input.GetKeyDown(KeyCode.A)) Swiped?.Invoke(Direction.Left);
         if (Input.GetKeyDown(KeyCode.D)) Swiped?.Invoke(Direction.Right);
 
-        if (Input.GetKey(KeyCode.D)) Draged?.Invoke( 3 * Time.deltaTime);
-        if (Input.GetKey(KeyCode.A)) Draged?.Invoke(-3 * Time.deltaTime);
-
         if (Input.GetKey(KeyCode.Q))
         {
             int value = UnityEngine.Random.Range(0, 4);
@@ -60,7 +57,6 @@ public sealed class Inputer : SingleBehaviour<Inputer>
         //Debug
         if (Input.GetKeyDown(KeyCode.R)) Game.Restart();
 
-
         if (Input.GetKeyDown(KeyCode.T)) Application.targetFrameRate = Application.targetFrameRate == 20 ? 120 : 20;
     }
 
@@ -74,7 +70,7 @@ public sealed class Inputer : SingleBehaviour<Inputer>
 
 
         public static Action<Direction> Swiped;
-        public static Action<float> Draged;
+        public static Action<float, float> Draged;
 
 
         public static void OnPressed(Vector2 screenPosition)
@@ -94,7 +90,7 @@ public sealed class Inputer : SingleBehaviour<Inputer>
         {
             Vector2 delta = screenPosition - _pressedPosition;
 
-            Draged?.Invoke( (screenPosition.x - _lastPosition.x) / _screenResolution.width * 200);
+            Draged?.Invoke( (screenPosition.x - _lastPosition.x) / _screenResolution.width * 3 , (screenPosition.y - _lastPosition.y) / _screenResolution.width * 3);
 
             _lastPosition = screenPosition;
 

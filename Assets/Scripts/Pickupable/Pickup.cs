@@ -9,7 +9,7 @@ public abstract class Pickup : Placeable
 
     private void OnTriggerEnter(Collider other)
     {
-        if( other.TryGetComponent<Player>(out var player) )
+        if( other.TryGetComponent<Player>(out var player) && Game.Mode.InInvincibilityMode == false )
         {
             OnPickup();
 
@@ -19,4 +19,5 @@ public abstract class Pickup : Placeable
 
     protected abstract void OnPickup();
 
+    public abstract void Init();
 }

@@ -37,4 +37,9 @@ public class Milk : Pickup
 
         if ( distance < 2f) _transform.position = Vector3.MoveTowards( _transform.position, Player.Movement.transform.position, (Time.deltaTime * 30) / (distance * 5) );
     }
+
+    public override void Init()
+    {
+        //throw new System.NotImplementedException();
+    }
 }

@@ -24,7 +24,7 @@ public class Fog : SingleBehaviour<Fog>
 
     private System.Collections.IEnumerator Move()
     {
-        while(Game.IsActive)
+        while(isActiveAndEnabled)
         {
             Vector3 position = _target.position;
 

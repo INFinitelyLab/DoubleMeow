@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Detector : MonoBehaviour
 {
-    public Action<Direction> Bumped;
+    public Action<Direction, bool> Bumped;
     
-    public void Bump() => Bumped?.Invoke(Direction.Up);
+    public void Bump(bool isNeedToDisactiveCamera) => Bumped?.Invoke(Direction.Up, isNeedToDisactiveCamera);
 }

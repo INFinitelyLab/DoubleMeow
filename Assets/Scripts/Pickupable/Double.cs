@@ -15,14 +15,14 @@ public class Double : Pickup
     }
 
 
-    private void Awake()
+    public override void Init()
     {
         IsAlreadyExist = true;
 
         _transform = transform;
     }
 
-    private void OnDisable() => IsAlreadyExist = false;
+    private void OnDestroy() => IsAlreadyExist = false;
 
 
     private void Update()

@@ -20,6 +20,7 @@ public abstract class ObstaclerBase : MonoBehaviour
 
         public bool IsPath { get; private set; }
         public bool IsObstacle { get; private set; }
+        public bool IsMilk { get; private set; }
         public bool IsEmpty { get; private set; } = true;
 
 
@@ -39,6 +40,11 @@ public abstract class ObstaclerBase : MonoBehaviour
         public void EnableObstacle()
         {
             IsObstacle = true;
+        }
+
+        public void EnableMilk()
+        {
+            IsMilk = true;
         }
 
         public void AddPlaceable(Placeable placeable, int depth)

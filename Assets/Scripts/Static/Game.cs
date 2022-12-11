@@ -9,6 +9,7 @@ public sealed class Game : SingleBehaviour<Game>
 
     public static float levelHeight => Instance._levelHeight;
     public static float Difficulty { get; private set; } = 1;
+    public static float PassedTime { get; private set; } = 0;
 
     public static bool IsActive { get; private set; }
     public static int Phase { get; private set; }
@@ -22,6 +23,8 @@ public sealed class Game : SingleBehaviour<Game>
     protected override void OnActive()
     {
         Stats.Load();
+
+        Portal.Reset();
 
         Instance._postProcessInstance.SetActive( Stats.TargetGraphics == GraphicPreset.High );
 
@@ -49,9 +52,9 @@ public sealed class Game : SingleBehaviour<Game>
     }
 
 
-    private void OnDraged(float axis)
+    private void OnDraged(float horizontal, float vertical)
     {
-        Player.Movement.Drag(axis);
+        Player.Movement.Drag(horizontal, vertical);
     }
 
 
@@ -63,10 +66,9 @@ public sealed class Game : SingleBehaviour<Game>
 
         IsActive = true;
 
-        Portal.Reset();
-
         Difficulty = 0.8f;
         Phase = 0;
+        PassedTime = 0;
 
         Inputer.Swiped += Instance.OnSwiped;
         Inputer.Draged += Instance.OnDraged;
@@ -76,9 +78,12 @@ public sealed class Game : SingleBehaviour<Game>
         Stats.Load();
 
         _acceleration = Instance.StartCoroutine( SpeedUp() );
+
+        Player.Movement.enabled = true;
+        Player.Camera.enabled = true;
     }
 
-    public static void Stop()
+    public static void Stop(bool isNeedToDisactiveCamera = false)
     {
         if (IsActive == false) throw new Exception("Ќельз€ остановить игру, игра уже остановлена");
 
@@ -87,10 +92,17 @@ public sealed class Game : SingleBehaviour<Game>
 
         IsActive = false;
 
+        Mode.DisableAllModes();
+
         Stats.Save();
         Stats.OnUnperfectJump();
 
         Instance.StopCoroutine( _acceleration );
+
+        //if (isNeedToDisactiveCamera)
+        //Player.Camera.enabled = false;
+
+        Debuger.Instance.OnGameEnd();
     }
 
     public static void Restart()
@@ -103,6 +115,33 @@ public sealed class Game : SingleBehaviour<Game>
     public static void Menu()
     {
         SceneTransiter.TransiteTo( Scene.Menu );
+    }
+
+    public static void Regenerate()
+    {
+        if (Game.IsActive)
+            Game.Stop();
+
+        IsActive = true;
+
+        Inputer.Swiped += Instance.OnSwiped;
+        Inputer.Draged += Instance.OnDraged;
+
+        Mode.DisableAllModes();
+
+        Stats.Load();
+
+        _acceleration = Instance.StartCoroutine(SpeedUp());
+
+        Player.Movement.enabled = true;
+        Player.Camera.enabled = true;
+
+        Drone.Instance.Enable();
+    }
+
+    public void Update()
+    {
+        PassedTime += Time.deltaTime;
     }
 
     private static IEnumerator SpeedUp()
@@ -128,8 +167,6 @@ public sealed class Game : SingleBehaviour<Game>
 
     public static class Mode
     {
-
-
         // Mario Card Mode
 
         public static bool InVehicleMode { get; private set; }
@@ -140,8 +177,12 @@ public sealed class Game : SingleBehaviour<Game>
 
             InVehicleMode = true;
 
+            DisableParachuteMode();
+
             Player.Movement.EnableVehicleControl();
             Player.Presenter.EnableVehicleMode();
+
+            DisableHulkMode();
         }
 
         public static void DisableVehicleMode()
@@ -166,6 +207,8 @@ public sealed class Game : SingleBehaviour<Game>
             InCurveMode = true;
 
             Player.Movement.EnableCurveControl();
+
+            DisableHulkMode();
         }
 
         public static void DisableCurveMode()
@@ -173,6 +216,8 @@ public sealed class Game : SingleBehaviour<Game>
             if (InCurveMode == false) return;
 
             InCurveMode = false;
+
+            DisableParachuteMode();
 
             Player.Movement.DisableCurveControl();
         }
@@ -197,6 +242,8 @@ public sealed class Game : SingleBehaviour<Game>
 
             InDoubleMode = false;
 
+            DisableParachuteMode();
+
             Instance.StopCoroutine(_doubleModeCoroutine);
         }
 
@@ -213,6 +260,8 @@ public sealed class Game : SingleBehaviour<Game>
 
             InMagnetMode = true;
 
+            DisableParachuteMode();
+
             _magnetModeCoroutine = Instance.StartCoroutine( InvokeDelay(30, DisableMagnetMode) );
         }
 
@@ -228,14 +277,143 @@ public sealed class Game : SingleBehaviour<Game>
         private static Coroutine _magnetModeCoroutine;
 
 
+        // Hulk Mode
+
+        public static bool InHulkMode { get; private set; }
+
+        public static void EnableHulkMode()
+        {
+            if (InHulkMode == true) return;
+
+            InHulkMode = true;
+
+            DisableParachuteMode();
+            
+            Player.Presenter.EnableHulkMode();
+
+            _hulkModeCoroutine = Instance.StartCoroutine(InvokeDelay(30, DisableHulkMode));
+        }
+
+        public static void DisableHulkMode()
+        {
+            if (InHulkMode == false) return;
+
+            InHulkMode = false;
+
+            Player.Presenter.DisableHulkMode();
+
+            Instance.StopCoroutine( _hulkModeCoroutine );
+        }   
+
+        private static Coroutine _hulkModeCoroutine;
+
+
+        // xAxIxRx Mode
+
+        public static bool InxAxIxRxMode { get; private set; }
+
+        public static void EnablexAxIxRxMode()
+        {
+            if (InxAxIxRxMode == true) return;
+
+            InxAxIxRxMode = true;
+
+            DisableHulkMode();
+            DisableParachuteMode();
+
+            Player.Movement.EnablexAxIxRxControl();
+            Player.Presenter.EnablexAxIxRxMode();
+
+            Builder.Instance.CancelErLoopTimer();
+
+            xAxIxRxer.Enable();
+        }
+
+        public static void DisablexAxIxRxMode()
+        {
+            if (InxAxIxRxMode == false) return;
+
+            InxAxIxRxMode = false;
+
+            Player.Movement.DisablexAxIxRxControl();
+            Player.Presenter.DisablexAxIxRxMode();
+            Player.Camera.DisablexAxIxRxMode();
+
+            Builder.Instance.ContinueErLoopTimer();
+        }
+
+
+        // Parachute Mode
+
+        public static bool InParachuteMode { get; private set; }
+
+        public static void EnableParachuteMode()
+        {
+            if (InParachuteMode == true) return;
+
+            InParachuteMode = true;
+
+            Player.Camera.EnablexAxIxRxMode();
+            Player.Presenter.EnableParachuteMode();
+            Player.Movement.EnableParachuteControl();
+        }
+
+        public static void DisableParachuteMode()
+        {
+            if (InParachuteMode == false) return;
+
+            InParachuteMode = false;
+
+            Player.Camera.DisablexAxIxRxMode();
+            Player.Presenter.DisableParachuteMode();
+            Player.Movement.DisableParachuteControl();
+        }
+
+
+        // Invincibility Mode
+
+        public static bool InInvincibilityMode { get; private set; }
+
+        public static void EnableInvincibilityMode()
+        {
+            if (InInvincibilityMode == true)
+                return;
+
+            InInvincibilityMode = true;
+
+            Builder.Instance.DisableAllObstacles();
+
+            _invincibilityModeCoroutine = Instance.StartCoroutine(InvokeDelay(5, DisableInvincibilityMode));
+        }
+
+        public static void DisableInvincibilityMode()
+        {
+            if (InInvincibilityMode == false)
+                return;
+
+            InInvincibilityMode = false;
+
+            Builder.Instance.EnableAllObstacles();
+
+            Instance.StopCoroutine(_invincibilityModeCoroutine);
+        }
+
+        private static Coroutine _invincibilityModeCoroutine;
+
+
         // Other
+
 
         public static void DisableAllModes()
         {
+            DisableInvincibilityMode();
+            DisableParachuteMode();
+            DisablexAxIxRxMode();
             DisableVehicleMode();
             DisableDoubleMode();
             DisableMagnetMode();
             DisableCurveMode();
+            DisableHulkMode();
         }
 
         private static System.Collections.IEnumerator InvokeDelay(float duration, Action invokable)
