@@ -5,9 +5,9 @@ public class LoseTrigger : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        if( other.transform.TryGetComponent<Player>(out var player))
+        if( other.transform.TryGetComponent<Player>(out var player) && Drone.Instance.IsEnabled == false)
         {
-            if(Game.IsActive && Drone.Instance.IsEnabled == false)
+            if(Game.IsActive)
             {
                 Game.Stop(true);
             }

@@ -44,8 +44,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 10, y: 10, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 10, y: 10, z: 11}
+  m_Center: {x: 0, y: 0, z: 5}
 --- !u!114 &6382503359668480713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,14 +59,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isNeedToEnableMetroMode: 0
-  _materials:
-  - {fileID: 2100000, guid: 76b0ff7bb1f99994d80e80ce2ae33a9b, type: 2}
-  - {fileID: 2100000, guid: 2d9ac6f94ddd80c4ca023e1f57dc3e8d, type: 2}
-  - {fileID: 2100000, guid: ee2bc1422a561bb4380337e6b87133f8, type: 2}
-  - {fileID: 2100000, guid: 20b9690e892adcd46b0163155873bddd, type: 2}
-  - {fileID: 2100000, guid: d6349029a596a0b438c0b0e4a2c7428c, type: 2}
-  - {fileID: 2100000, guid: 47908248d827e2340a7e3d6cb13097a2, type: 2}
-  - {fileID: 2100000, guid: 769aca496e4578a43b0396a047e8f566, type: 2}
-  - {fileID: 2100000, guid: e633dc0c72101234385112b38b1f79a4, type: 2}
-  - {fileID: 2100000, guid: be69d5fad82b87244b42c50babf58a7e, type: 2}
-  - {fileID: 2100000, guid: ae8128dfdea99f247af7d5167705c0c2, type: 2}

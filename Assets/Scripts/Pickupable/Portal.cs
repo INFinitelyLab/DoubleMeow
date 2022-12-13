@@ -4,7 +4,7 @@ public class Portal : Placeable
 {
     private void OnTriggerEnter(Collider collider)
     {
-        if (collider.TryGetComponent<Player>(out var player))
+        if (collider.TryGetComponent<Player>(out var player) && Drone.Instance.IsEnabled == false)
         {
             if (IsAlreadyExist || IsCanPlace)
                 StartPlayerTransition( Mathf.Clamp((Quaternion.Inverse(Player.Movement.transform.rotation) * transform.position).z - (Quaternion.Inverse(Player.Movement.transform.rotation) * Player.Movement.transform.position).z, 0.1f, 3) );

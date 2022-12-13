@@ -17,6 +17,6 @@ public class RegenTrigger : SingleBehaviour<RegenTrigger>
 
     public void MoveTo(Vector3 position)
     {
-        transform.localPosition = position;
+        transform.position = position;
     }
 }

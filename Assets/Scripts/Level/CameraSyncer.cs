@@ -44,4 +44,10 @@ public class CameraSyncer : MonoBehaviour
             Player.Presenter.OnSlope( _slope );
         }
     }
+
+
+    public static void Reset()
+    {
+        IsSyncNow = false;
+    }
 }

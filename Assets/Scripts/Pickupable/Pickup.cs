@@ -9,7 +9,7 @@ public abstract class Pickup : Placeable
 
     private void OnTriggerEnter(Collider other)
     {
-        if( other.TryGetComponent<Player>(out var player) && Game.Mode.InInvincibilityMode == false )
+        if( other.TryGetComponent<Player>(out var player) && Drone.Instance.IsEnabled == false && Game.Mode.InInvincibilityMode == false )
         {
             OnPickup();
 

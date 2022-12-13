@@ -76,6 +76,9 @@ public class FollowCamera : MonoBehaviour, ILowereable
     {
         Player.RepositeCamera += SetHeight;
 
+        _targetHeight = _target.position.y;
+        _height = _targetHeight;
+
         _currentOffset.y = _transform.position.y - (_target.position.y);
 
         _localPosition = Quaternion.Inverse(_target.rotation) * (_transform.position - _turnPosition);
@@ -129,11 +132,11 @@ public class FollowCamera : MonoBehaviour, ILowereable
     }
 
 
-    public void DisableMetroMode()
+    public void DisableMetroMode(bool withAnimation)
     {
         _isMetroMode = false;
 
-        _metroCurveTime = 0;
+        if(withAnimation) _metroCurveTime = 0;
     }
 
 

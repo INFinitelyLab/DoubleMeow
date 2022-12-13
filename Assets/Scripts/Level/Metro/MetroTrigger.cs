@@ -6,19 +6,30 @@ public class MetroTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if( other.transform.TryGetComponent<Movement>(out var player) )
+        if( other.transform.TryGetComponent<Movement>(out var player))
         {
             if (_isNeedToEnableMetroMode)
             {
-                Player.Camera.EnableMetroMode();
+                if( Drone.Instance.IsEnabled == false )
+                {
+                    Player.Camera.EnableMetroMode();
 
-                Invoke(nameof(EnableMetroMode), 0.3f);
+                    Invoke(nameof(EnableMetroMode), 0.3f);
+                }
+                else
+                {
+                    Player.Presenter.EnableCurvatization();
+                }
             }
             else
             {
-                Player.Camera.DisableMetroMode();
-
-                Invoke(nameof(DisableMetroMode), 0.5f);
+                if ( Drone.Instance.IsEnabled == false || Drone.Instance.IsTranslateFromMode == true)
+                {
+                    Player.Camera.DisableMetroMode( Drone.Instance.IsTranslateFromMode == false );
+                    
+                    Invoke(nameof(DisableMetroMode), 0.5f); 
+                }
+                
             }
         }
     }

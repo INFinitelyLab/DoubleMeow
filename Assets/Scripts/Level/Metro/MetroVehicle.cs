@@ -6,14 +6,19 @@ public class MetroVehicle : Building
     [SerializeField] private Transform _body;
 
     private Transform _player;
+    private Vector3 _playerPastPosition;
+    private Transform _transform2;
 
     public Transform Body => _body;
 
     private void Start()
     {
-        _player = Player.Presenter.transform;
+        _transform2 = transform;
 
-        _body.transform.localPosition = Vector3.forward * ((Mathf.Abs(_body.position.z - _player.transform.position.z) + Mathf.Abs(_body.position.x - _player.transform.position.x)) * _moveSpeed);
+        _player = Player.Presenter.transform;
+        _playerPastPosition = _player.position;
+
+        _body.transform.localPosition = Vector3.forward * ((Mathf.Abs(_body.position.z - _player.position.z) + Mathf.Abs(_body.position.x - _player.position.x)) * _moveSpeed);
     }
 
 
@@ -25,8 +30,8 @@ public class MetroVehicle : Building
 
     private new void Update()
     {
-        if (Game.IsActive == false && _moveSpeed != 0) _moveSpeed = Mathf.MoveTowards( _moveSpeed, 0 , 5 * Time.deltaTime );
+        if (Game.IsActive && Drone.Instance.IsEnabled == false)  _body.localPosition = Vector3.back * (Quaternion.Inverse(_player.rotation) * (_player.position - _transform2.position)).z * _moveSpeed;
 
-        _body.transform.localPosition += Vector3.back * (_moveSpeed * Player.Movement.walkSpeed * Game.Difficulty) * Time.deltaTime;
+        _playerPastPosition = _player.position;
     }
 }

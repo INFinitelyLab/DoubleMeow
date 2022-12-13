@@ -32,6 +32,7 @@ public class Movement : MonoBehaviour
     private Vector3 _targetPosition;
     private Vector3 _turnPosition;
     private Vector3 _velocity;
+    private Vector3 _previousControllerVelocity = Vector3.one;
 
     private CharacterController _controller;
     private Transform _transform;
@@ -220,7 +221,10 @@ public class Movement : MonoBehaviour
         }
         else
         {
-            _velocity.y = 0;
+            if (_isVehicleControl)
+                _velocity.y = -0.5f - _transform.position.y;
+            else
+                _velocity.y = 0;
         }
 
         if (Game.IsActive)
@@ -269,7 +273,9 @@ public class Movement : MonoBehaviour
             if (Game.Mode.InParachuteMode) Game.Mode.DisableParachuteMode();
         }
 
-        if (_isCurveControl == false && _isAIRControl == false) _targetPosition.x = Mathf.Lerp( TargetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * deltaTime);
+        _previousControllerVelocity = _controller.velocity;
+
+        if (_isCurveControl == false && _isAIRControl == false) _targetPosition.x = Mathf.Lerp( _targetPosition.x , _line.ToInt() * (Game.Mode.InVehicleMode? 1.1f : _roadWidth), 20 * deltaTime);
     }
 
 
@@ -308,8 +314,18 @@ public class Movement : MonoBehaviour
 
         hit.transform.TryGetComponent<Building>(out var building);
 
-        if ((Quaternion.Inverse(_transform.rotation) * _controller.velocity).z / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f && Game.IsActive && _velocity.z > _walkSpeed * Game.Difficulty / 2 && (Player.Presenter.InHulkMode == false || building != null))
+        if
+        (
+            Mathf.Abs((Quaternion.Inverse(_transform.rotation) * _controller.velocity).z) / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f &&
+            Game.IsActive &&
+            Mathf.Abs((Quaternion.Inverse(_transform.rotation) * _previousControllerVelocity).z) / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f &&
+            (Player.Presenter.InHulkMode == false || building != null) &&
+            Drone.Instance.IsEnabled == false &&
+            _velocity.z >= _walkSpeed * Game.Difficulty / 2
+        )
         {
+            Debug.Log("Velocity : " + _controller.velocity + " , RotatedVelocityZ : " + (Quaternion.Inverse(_transform.rotation) * _controller.velocity).z / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime));
+
             Player.Detector.Bump( building != null );
 
             _velocity = new Vector3(0, _jumpForce / 3, Game.Mode.InVehicleMode ? -15f : -5f) / (_isControlled ? 2 : 1);
@@ -394,6 +410,15 @@ public class Movement : MonoBehaviour
     }
 
 
+    public void OnRegenerate()
+    {
+        _velocity.z = 0;
+        _previousControllerVelocity = Vector3.one;
+
+        _controller.Move(Vector3.one * 0.01f);
+    }
+
+
     public void EnableVehicleControl()
     {
         if (_isVehicleControl == true)
@@ -418,10 +443,14 @@ public class Movement : MonoBehaviour
 
         _line = (RoadLine)( TargetPosition.x / _roadWidth);
         _targetPosition.x = _line.ToInt() * _roadWidth;
-        _velocity.z = 30 * Game.Difficulty;
-        _velocity.y = 6.7f;
 
-        Player.Presenter.OnJump();
+        if (Drone.Instance.IsEnabled == false)
+        {
+            _velocity.z = 30 * Game.Difficulty;
+            _velocity.y = 6.7f;
+
+            Player.Presenter.OnJump();
+        }
 
         _walkSpeed /= 2f;
     }

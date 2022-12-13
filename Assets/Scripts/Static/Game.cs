@@ -76,6 +76,7 @@ public sealed class Game : SingleBehaviour<Game>
         Mode.DisableAllModes();
 
         Stats.Load();
+        CameraSyncer.Reset();
 
         _acceleration = Instance.StartCoroutine( SpeedUp() );
 
@@ -91,8 +92,6 @@ public sealed class Game : SingleBehaviour<Game>
         Inputer.Draged -= Instance.OnDraged;
 
         IsActive = false;
-
-        Mode.DisableAllModes();
 
         Stats.Save();
         Stats.OnUnperfectJump();
@@ -127,9 +126,8 @@ public sealed class Game : SingleBehaviour<Game>
         Inputer.Swiped += Instance.OnSwiped;
         Inputer.Draged += Instance.OnDraged;
 
-        Mode.DisableAllModes();
-
         Stats.Load();
+        CameraSyncer.Reset();
 
         _acceleration = Instance.StartCoroutine(SpeedUp());
 
@@ -181,6 +179,9 @@ public sealed class Game : SingleBehaviour<Game>
 
             Player.Movement.EnableVehicleControl();
             Player.Presenter.EnableVehicleMode();
+
+            Builder.Instance.DeleteAllRegeneratePoints();
+            Builder.Instance.Metroer.CreateRegeneratePoint();
 
             DisableHulkMode();
         }

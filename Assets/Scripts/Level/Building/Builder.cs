@@ -33,6 +33,10 @@ public class Builder : SingleBehaviour<Builder>
     [SerializeField] private float _distanceForBuildings;
     [SerializeField] private float _distanceForDecoBuildings;
 
+    public Metroer Metroer => _metroer;
+    public Curver Curver => _curver;
+    public Tiler Tiler => _tiler;
+
     private Quaternion _rotation;
 
     private string _currentIdentityName;
@@ -104,6 +108,8 @@ public class Builder : SingleBehaviour<Builder>
         _nextBuildingIsVehicle = false;
 
         CreateNewBuilding(_startBuilding, true);
+
+        _isNeedToEnableMetroMode = true;
 
         Regenerate(false);
 
@@ -387,7 +393,7 @@ public class Builder : SingleBehaviour<Builder>
 
     public void DisableAllObstacles()
     {
-        Obstacle[] obstacles = FindObjectsOfType<Obstacle>();
+        Obstacle[] obstacles = FindObjectsOfType<Obstacle>(true);
 
         foreach(Obstacle obstacle in obstacles)
         {
@@ -397,7 +403,7 @@ public class Builder : SingleBehaviour<Builder>
 
     public void EnableAllObstacles()
     {
-        Obstacle[] obstacles = FindObjectsOfType<Obstacle>();
+        Obstacle[] obstacles = FindObjectsOfType<Obstacle>(true);
 
         foreach(Obstacle obstacle in obstacles)
         {

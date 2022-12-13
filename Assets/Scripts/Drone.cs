@@ -9,6 +9,7 @@ public class Drone : SingleBehaviour<Drone>
     private Coroutine _routine;
 
     public bool IsEnabled { get; private set; }
+    public bool IsTranslateFromMode { get; private set; }
 
 
     private void Update()
@@ -23,6 +24,9 @@ public class Drone : SingleBehaviour<Drone>
     public void Enable()
     {
         transform.rotation = Player.Movement.transform.rotation;
+
+        Player.Movement.enabled = false;
+        Player.Camera.enabled = false;
 
         Vector3 playerPosition = Player.Movement.transform.position;
         Vector3 closestPoint = Vector3.zero;
@@ -50,9 +54,7 @@ public class Drone : SingleBehaviour<Drone>
     {
         IsEnabled = true;
 
-        Player.Movement.Controller.enabled = false;
-        Player.Movement.enabled = false;
-        Player.Camera.enabled = false;
+        IsTranslateFromMode = Game.Mode.InVehicleMode;
 
         Vector3 normalizedPlayerPosition = playerPosition;
         normalizedPlayerPosition.y = Mathf.Max(playerPosition.y, Player.Movement.Height);
@@ -62,35 +64,43 @@ public class Drone : SingleBehaviour<Drone>
         Vector3 offset = new Vector3(0, 1f, 0);
         Vector3 lowerOffset = new Vector3(0,0.5f,0);
 
-
         yield return StartCoroutine( MoveTo( startPosition + offset, normalizedPlayerPosition + offset, 1.5f ) );    // Подлет
-
 
         yield return StartCoroutine( MoveTo( normalizedPlayerPosition + offset, playerPosition + lowerOffset, 1 ));  // Снижение
 
         Player.Movement.transform.parent = transform;
         Player.Presenter.OnDrone();
 
+        if( IsTranslateFromMode )
+        {   
+            Player.Presenter.CreateGhostVehicle();
+        }
+
+        Game.Mode.DisableAllModes();
+
         yield return StartCoroutine( MoveTo(playerPosition + lowerOffset, normalizedPlayerPosition + offset, 1 ));  // Возвышение
 
         Player.Camera.transform.parent = transform;
 
-        yield return StartCoroutine( MoveTo(normalizedPlayerPosition + offset, point + offset, 1 ) );    // Транспортировка
+        yield return StartCoroutine( MoveTo(normalizedPlayerPosition + offset, point + offset, 1, true ) );    // Транспортировка
 
         Player.Camera.transform.parent = null;
 
         Player.Presenter.OnUndrone();
         yield return StartCoroutine( MoveTo( point + offset, point + lowerOffset, 1 )); // Снижение
+
         Player.Movement.transform.parent = null;
 
-        IsEnabled = false;
+        Game.Mode.EnableInvincibilityMode();
+        Player.Movement.OnRegenerate();
 
         Player.Camera.enabled = true;
         Player.Movement.enabled = true;
-        Player.Movement.Controller.enabled = true;
 
-        Game.Mode.EnableInvincibilityMode();
         Player.Presenter.OnRegenerate();
+
+        IsTranslateFromMode = false;
+        IsEnabled = false;
 
         yield return StartCoroutine( MoveTo( point + lowerOffset, point + offset, 1 )); // Возвышение
         
@@ -98,17 +108,20 @@ public class Drone : SingleBehaviour<Drone>
     }
 
 
-    private IEnumerator MoveTo(Vector3 from, Vector3 to, float duration)
+    private IEnumerator MoveTo(Vector3 from, Vector3 to, float duration, bool byDistance = false)
     {
         float progress = 0;
+        float distance = Vector3.Distance(from, to);
 
         while( progress < 1 )
         {
-            progress += Time.deltaTime / duration;
+            progress += Time.deltaTime / duration / (byDistance? (distance / 20) : 1);
 
-            transform.position = Vector3.Lerp( from, to, progress );
+            transform.position = Vector3.Lerp( from, to, Mathf.Sin(progress / 2 * Mathf.PI) );
 
             yield return null;
         }
+
+        transform.position = to;
     }
 }

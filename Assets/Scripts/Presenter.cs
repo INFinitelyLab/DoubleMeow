@@ -51,6 +51,8 @@ public class Presenter : MonoBehaviour
 
     public void OnRegenerate()
     {
+        _animator.ResetTrigger("Bump");
+
         StartCoroutine(Blinking(5));
     }
 
@@ -168,6 +170,18 @@ public class Presenter : MonoBehaviour
         _animator.SetBool("InVehicle", false);
 
         _bendSmoothTime *= 2f;
+    }
+
+
+    public void CreateGhostVehicle()
+    {
+        GameObject vehicle = Instantiate(_ownVehicle);
+
+        vehicle.SetActive(true);
+
+        vehicle.transform.rotation = _ownVehicle.transform.rotation;
+        vehicle.transform.position = _ownVehicle.transform.position;
+        vehicle.transform.localScale = _ownVehicle.transform.lossyScale;
     }
 
 

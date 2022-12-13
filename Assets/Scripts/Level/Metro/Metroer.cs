@@ -54,6 +54,19 @@ public class Metroer : MonoBehaviour
         _vehicleDistance = 10;
         _regenTrigger.Triggered += Regenerate;
         _startPosition = from;
+
+        CreateRegeneratePoint();
+    }
+
+
+    public void CreateRegeneratePoint()
+    {
+        Vector3 position = _startPosition + _rotation * Vector3.forward * (Mathf.Ceil(_targetMetroDistance / _metroPrefab.EndPoint.localPosition.z) * _metroPrefab.EndPoint.localPosition.z + 10);
+
+        GameObject regenerationPoint = new GameObject();
+
+        regenerationPoint.transform.position = position;
+        regenerationPoint.AddComponent<RegeneratePoint>();
     }
 
 
@@ -103,7 +116,7 @@ public class Metroer : MonoBehaviour
             _distance += _metroPrefab.EndPoint.transform.localPosition.z;
         }
 
-        if (_distance + 5 < _targetMetroDistance)
+        if (_distance + 5 < _targetMetroDistance && Drone.Instance.IsEnabled == false)
         {
             while( _vehicleDistance < targetDistance )
             {
@@ -141,7 +154,7 @@ public class Metroer : MonoBehaviour
         }
 
 
-        _regenTrigger.MoveTo( Player.Movement.transform.localPosition + _rotation * Vector3.forward * 2 * Game.Difficulty);
+        _regenTrigger.MoveTo( Player.Movement.transform.position + _rotation * Vector3.forward * 2 * Game.Difficulty);
 
         if (_distance >= _targetMetroDistance )
         {
