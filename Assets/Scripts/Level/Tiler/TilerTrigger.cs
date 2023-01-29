@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TilerTrigger: MonoBehaviour
+public class TilerTrigger: Trashable
 {
     public bool isNeedToEnableTilerMode;
 

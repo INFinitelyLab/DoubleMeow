@@ -11,7 +11,7 @@ public class Turner : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.transform.TryGetComponent<Movement>(out var player))
+        if(other.transform.TryGetComponent<Movement>(out var player) && Player.Movement.IsTurning == false)
         {
             player.Turn( this );
         }

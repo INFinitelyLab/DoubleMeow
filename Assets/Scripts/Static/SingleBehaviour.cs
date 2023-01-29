@@ -22,8 +22,8 @@ public abstract class SingleBehaviour<T> : MonoBehaviour where T: SingleBehaviou
 
     private void OnEnable()
     {
-        //if (_instance != null)
-        //    throw new Exception("На сцене должен быть активен только один " + typeof(T).Name);
+        if (_instance != null && _instance != GetComponent<T>())
+            Destroy(_instance.gameObject);
 
         _instance = GetComponent<T>();
         
@@ -33,8 +33,6 @@ public abstract class SingleBehaviour<T> : MonoBehaviour where T: SingleBehaviou
     private void OnDisable()
     {
         OnDisactive();
-
-        //_instance = null;
     }
 
     protected virtual void OnActive() { }

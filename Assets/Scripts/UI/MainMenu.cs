@@ -1,33 +1,173 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
-public class MainMenu : MonoBehaviour
+public class MainMenu : MonoBehaviour   
 {
     [SerializeField] private Settings _settings;
+    [SerializeField] private GameObject _shop;
+    [SerializeField] private GameObject _miniGames;
+    [SerializeField] private GameObject _battlepass;
 
+    private static MainMenu Instance;
+    public static Settings Settings => Instance._settings;
+    public static GameObject Shop => Instance._shop;
+    public static GameObject MiniGamesWindow => Instance._miniGames;
+    public static GameObject BattlepassWindow => Instance._battlepass;
 
-    private void OnEnable()
+    public static bool IsOpened => Instance == null? false : Instance.gameObject.activeInHierarchy;
+
+    private static bool _isNeedToOpen;
+    private static bool _isNeedToOpenShop;
+    private static bool _isNeedToOpenBattlepass;
+
+    private void Awake()
     {
-        Stats.Load();
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        if (_isNeedToOpen)
+        {
+            Open();
+            _isNeedToOpen = false;
+        }
+        if (_isNeedToOpenShop)
+        {
+            OpenShop();
+            _isNeedToOpenShop = false;
+        }
+        if (_isNeedToOpenBattlepass)
+        {
+            OpenBattlepass();
+            _isNeedToOpenBattlepass = false;
+        }
     }
 
 
-    public void OpenSettings()
+    public static void OpenBattlepassAfterReset() => _isNeedToOpenBattlepass = true;
+
+    public static void OpenShopAfterReset() => _isNeedToOpenShop = true;
+
+    public static void OpenAfterReset() => _isNeedToOpen = true;
+
+
+    public static void Open()
     {
-        _settings.gameObject.SetActive(true);
-        _settings.OnOpen();
+        Instance.gameObject.SetActive(true);
+    }
+
+    public static void Close()
+    {
+        Instance.gameObject.SetActive(false);
     }
 
 
-    public void CloseSettings()
+    public static void OpenSettings()
     {
-        _settings.OnClose();
-        _settings.gameObject.SetActive(false);
+        Settings.gameObject.SetActive(true);
+        Settings.OnOpen();
+    }
+
+    public static void CloseSettings()
+    {
+        Settings.OnClose();
+        Settings.gameObject.SetActive(false);
     }
 
 
-    public void Launch()
+    public void OpenShop()
     {
-        SceneTransiter.TransiteTo( Scene.Game );
+        _shop.SetActive(true);
+    }
+
+    public void CloseShop()
+    {
+        _shop.SetActive(false);
+    }
+
+
+    public void OpenMiniGames()
+    {
+        _miniGames.SetActive(true);
+    }
+
+    public void CloseMiniGames()
+    {
+        _miniGames.SetActive(false);
+    }
+
+
+    public void OpenBattlepass()
+    {
+        _battlepass.SetActive(true);
+    }
+
+    public void CloseBattlepass()
+    {
+        _battlepass.SetActive(false);
+    }
+
+
+    public static void ResetScene()
+    {
+        SceneManager.LoadScene(1);
+    }
+
+
+    public static void Launch()
+    {
+        if (IsOpened) Close();
+
+        MiniGames.Deactivate();
+
+        Controller.SetNewGameType( GameType.Game );
+
+        ResetScene();
+    }
+
+    public static void LaunchMetroer()
+    {
+        if (Bank.TryDecreaseCoins(100) == false) return;
+
+        MiniGames.Activate( MiniGameType.Metroer );
+
+        Controller.SetNewGameType( GameType.MiniGame );
+
+        ResetScene();
+    }
+
+    public static void LaunchCurver()
+    {
+        if (Bank.TryDecreaseCoins(100) == false) return;
+
+        MiniGames.Activate( MiniGameType.Curver );
+
+        Controller.SetNewGameType( GameType.MiniGame );
+
+        ResetScene();
+    }
+
+    public static void LaunchTiler()
+    {
+        if (Bank.TryDecreaseCoins(100) == false) return;
+
+        MiniGames.Activate( MiniGameType.Tiler );
+
+        Controller.SetNewGameType( GameType.MiniGame );
+
+        ResetScene();
+    }
+
+    public static void LaunchRetrowaver()
+    {
+        if (Bank.TryDecreaseCoins(100) == false) return;
+
+        MiniGames.Activate(MiniGameType.Retrowave);
+
+        Controller.SetNewGameType(GameType.MiniGame);
+
+        ResetScene();
     }
 }

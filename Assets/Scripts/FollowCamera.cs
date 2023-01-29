@@ -4,7 +4,8 @@ public class FollowCamera : MonoBehaviour, ILowereable
 {
     [SerializeField] private Transform _target;
     [SerializeField] private float _moveSpeed;
-    
+    [SerializeField] private Vector3 _offset;
+
     [Header("Tiler")]
     [SerializeField] private Vector3 _tilerPosition;
     [SerializeField] private Vector3 _tilerRotation;
@@ -53,7 +54,11 @@ public class FollowCamera : MonoBehaviour, ILowereable
     private bool _isTurnMode;
     private float _turnFarIntensity;
 
-    private float _turnIntensity = 2;
+    public bool InTilerMode => _isTilerMode;
+    public Vector3 Offset => _offset;
+
+    public Vector3 byOutsidePosition;
+    private float _byOutsideTime = 1;
 
 
     private void Awake()
@@ -64,11 +69,29 @@ public class FollowCamera : MonoBehaviour, ILowereable
 
         _rotationOffset = _transform.localEulerAngles;
 
-        _offset = _transform.position;
-
         _currentOffset = _offset;
 
         _idealOffset = _currentOffset;
+    }
+
+
+    public void OnOutside()
+    {
+        _byOutsideTime = 0;
+    }
+
+
+    public void OnRegenerate(Vector3 point)
+    {
+        _currentTilerRotation = Vector3.zero;
+        _currentTilerPosition = Vector3.zero;
+
+        _currentOffset = _idealOffset;
+
+        _rotation = Quaternion.Euler(_rotationOffset.x, _rotationOffset.y + _target.eulerAngles.y, _rotationOffset.z);
+
+        _transform.rotation = _rotation;
+        _transform.position = point + _target.rotation * _currentOffset;
     }
 
 
@@ -128,7 +151,7 @@ public class FollowCamera : MonoBehaviour, ILowereable
     {
         _isMetroMode = true;
 
-        _metroCurveTime = 0;
+        if (Game.InMiniGames == false) _metroCurveTime = 0;
     }
 
 
@@ -155,6 +178,7 @@ public class FollowCamera : MonoBehaviour, ILowereable
     {
         _inAIRMode = true;
 
+        _height = 0;
         _currentOffset.y = _transform.position.y - (_target.position.y);
 
         _localPosition = Quaternion.Inverse(_target.rotation) * (_transform.position - _turnPosition);
@@ -166,11 +190,10 @@ public class FollowCamera : MonoBehaviour, ILowereable
 
         _height = 0;
 
-        _localPosition.y = _transform.position.y;
+        _localPosition = Quaternion.Inverse(_target.rotation) * (_transform.position - _turnPosition);
     }
 
-
-    private void LateUpdate()
+    public void LateUpdate()
     {
         if (_target == null)
             throw new System.Exception("Не назначен объект для преследования камерой");
@@ -193,27 +216,34 @@ public class FollowCamera : MonoBehaviour, ILowereable
         _currentOffset = Vector3.Lerp(_currentOffset, _idealOffset * ( _inHulkMode? 2 : 1 ), _moveSpeed / 3 * Time.deltaTime);
 
         _metroCurveTime = Mathf.MoveTowards( _metroCurveTime, 4, Time.deltaTime );
+        _byOutsideTime = Mathf.MoveTowards( _byOutsideTime, 1, 2 * Time.deltaTime );
 
-        _turnFarIntensity = Mathf.Lerp(_turnFarIntensity, _turnCameraCurve.Evaluate( Player.Movement.RotateProgress / 90 ), 2 * Time.deltaTime);
+        //_turnFarIntensity = Mathf.Lerp(_turnFarIntensity, _turnCameraCurve.Evaluate( Player.Movement.RotateProgress / 90 ), 5 * Time.deltaTime);
         
-            _localPosition.x = Mathf.Lerp(_localPosition.x, ((Player.Movement.InterpolatePosition.x - Player.Movement.InterpolateTurnPosition.x) + _currentOffset.x) * (Game.Mode.InCurveMode ? 0.75f : 1f) , _moveSpeed * Time.deltaTime);
+            _localPosition.x = Mathf.Lerp(_localPosition.x, ((Player.Movement.LocalPosition.x) + _currentOffset.x) * (Game.Mode.InCurveMode ? 0.75f : 1f) , _moveSpeed * Time.deltaTime);
             _localPosition.y = Mathf.Lerp(_localPosition.y, _inAIRMode == false? ((_lowers == 0 ? (Mathf.Lerp(0, (_target.position.y), (_isMetroMode ? 1 - _metroCurveTime : _metroCurveTime)) - _height) / 2 : 0) + _currentMetroPosition.y + _currentHulkPosition.y + _currentOffset.y + _height + _currentTilerPosition.y) : (_target.position.y + _currentOffset.y) , _moveSpeed * Time.deltaTime);
-            _localPosition.z = -_turnFarIntensity + Player.Movement.InterpolatePosition.z - Player.Movement.InterpolateTurnPosition.z + _currentOffset.z + _currentTilerPosition.z + _currentMetroPosition.z + _currentHulkPosition.z + _metroCurve.Evaluate(_metroCurveTime * 2.5f) * (_isMetroMode ? 0.5f : 0.5f);
+            _localPosition.z = -_turnFarIntensity + _currentOffset.z + _currentTilerPosition.z + _currentMetroPosition.z + _currentHulkPosition.z + _metroCurve.Evaluate(_metroCurveTime * 2.5f) * (_isMetroMode ? 0.5f : 0.5f);
 
-            if (Drone.Instance.IsEnabled == false && Game.Mode.InxAxIxRxMode == false && Game.Mode.InParachuteMode == false) _localPosition.y = Mathf.Max(_localPosition.y, _height + _currentOffset.y);
+            if (Drone.Instance.IsEnabled == false && Game.Mode.InxAxIxRxMode == false && Game.Mode.InParachuteMode == false && Game.Mode.InCurveMode == false) _localPosition.y = Mathf.Max(_localPosition.y, _height + _currentOffset.y);
 
-            _position = _target.rotation * _localPosition + _turnPosition;
+        Vector3 localPosition = (_currentOffset + Player.Movement.Position);
 
-            _rotation = Quaternion.Euler(_rotationOffset.x + _currentTilerRotation.x + _currentMetroRotation.x + _currentHulkRotation.x, _rotationOffset.y + _target.eulerAngles.y, _rotationOffset.z + (Game.Mode.InCurveMode ? (Player.Movement.InterpolateTurnPosition - Player.Movement.InterpolatePosition).x * -5 : 0));
+        localPosition.x = _localPosition.x + Player.Movement.TurnPosition.x;
+        localPosition.y = _localPosition.y;
+        localPosition.z = _localPosition.z + Player.Movement.Position.z;
 
-        _transform.position = _position;
+        _transform.rotation = Quaternion.Euler(_rotationOffset.x + _currentTilerRotation.x + _currentMetroRotation.x + _currentHulkRotation.x, _rotationOffset.y + _target.eulerAngles.y, _rotationOffset.z + (Game.Mode.InCurveMode ? Player.Movement.LocalPosition.x * 5 : 0));
 
-        _transform.localRotation = _rotation;
+        _transform.position = Vector3.Lerp( byOutsidePosition , _target.rotation * localPosition , _byOutsideTime);
+    }
+
+    public void LatexAxIxRxUpdate()
+    {
+        _transform.localPosition = Vector3.Lerp( _transform.localPosition, _currentOffset, 5 * Time.deltaTime );
     }
 
     #region Lowereable
 
-    private Vector3 _offset;
     private Vector3 _currentOffset;
     private Vector3 _idealOffset;
 

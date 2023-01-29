@@ -25,6 +25,8 @@ public class Tiler : MonoBehaviour
 
     public System.Action<Vector3, RoadLine> EndGenerate;
 
+    public bool IsEnabled { get; private set; }
+
 
     private void Awake()
     {
@@ -32,7 +34,7 @@ public class Tiler : MonoBehaviour
     }
 
 
-    public void Spawn(Vector3 from, Quaternion rotation, System.Action<Vector3, RoadLine> OnEndMethod, float decoEndPoint, RoadLine line )
+    public void Spawn(Vector3 from, Quaternion rotation, System.Action<Vector3, RoadLine> OnEndMethod, float decoEndPoint, RoadLine line)
     {
         from.y = 0;
 
@@ -42,7 +44,7 @@ public class Tiler : MonoBehaviour
         _rotation = rotation;
         _startPosition = from;
         _decoEndPoint = decoEndPoint;
-        
+
         EndGenerate = OnEndMethod;
 
         _distance = 0;
@@ -51,9 +53,9 @@ public class Tiler : MonoBehaviour
 
         _regenTrigger.Triggered += Regenerate;
 
-        CreateTrigger( from, true, rotation );
+        CreateTrigger(from, true, rotation);
 
-        _decoEndPoint = Building.PlaceDecorations(0, _decoEndPoint, from, rotation, _targetDistance , _decoPrefabs, 1);
+        _decoEndPoint = Building.PlaceDecorations(0, _decoEndPoint, from, rotation, _targetDistance, _decoPrefabs, 1);
     }
 
 
@@ -61,7 +63,7 @@ public class Tiler : MonoBehaviour
     {
         Tile tile = Instantiate(origin, position, Quaternion.identity, transform);
 
-        StartCoroutine(WaitForActive( _player, tile.transform ));
+        StartCoroutine(WaitForActive(_player, tile.transform));
 
         return tile;
     }
@@ -123,16 +125,16 @@ public class Tiler : MonoBehaviour
         {
             _nextSurfDistance--;
 
-            tile = CreateNewTile( _tile, _startPosition + _rotation * (Vector3.forward * (_distance) + Vector3.right * (int)_line * 0.746f) );
+            tile = CreateNewTile(_tile, _startPosition + _rotation * (Vector3.forward * (_distance) + Vector3.right * (int)_line * 0.746f));
 
-            if ( _nextSurfDistance <= 0 )
+            if (_nextSurfDistance <= 0)
             {
                 _nextSurfDistance = Random.Range(2, 5);
 
                 if (_line == RoadLine.Venus)
                     _line.TrySurfRandom();
                 else
-                    _line.TrySurf( _line == RoadLine.Mercury? Direction.Right : Direction.Left );
+                    _line.TrySurf(_line == RoadLine.Mercury ? Direction.Right : Direction.Left);
 
                 tile = CreateNewTile(_tile, _startPosition + _rotation * (Vector3.forward * (_distance) + Vector3.right * (int)_line * 0.746f));
             }
@@ -141,7 +143,7 @@ public class Tiler : MonoBehaviour
             _distance += 0.746f;
         }
 
-       _regenTrigger.MoveTo(Player.Movement.transform.localPosition + _rotation * Vector3.forward * 0.746f);
+        _regenTrigger.MoveTo(Player.Movement.transform.localPosition + _rotation * Vector3.forward * 0.746f);
 
         if (_distance >= _targetDistance)
         {
@@ -151,5 +153,15 @@ public class Tiler : MonoBehaviour
 
             EndGenerate?.Invoke(_rotation * Vector3.forward * _distance + _startPosition, _line);
         }
+    }
+
+
+    public void Disable()
+    {
+        IsEnabled = false;
+
+        _regenTrigger.Triggered -= Regenerate;
+
+        EndGenerate?.Invoke(default, RoadLine.Venus);
     }
 }

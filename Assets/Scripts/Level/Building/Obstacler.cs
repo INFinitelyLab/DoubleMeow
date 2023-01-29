@@ -2,15 +2,14 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+
 public class Obstacler : ObstaclerBase
 {
     [SerializeField] protected Obstacle[] obstacles;
     [SerializeField] protected Obstacle[] bridgeObstacles;
-    [SerializeField] protected Obstacle _rise;
     [SerializeField] protected Milk milk;
     [SerializeField] protected Pickup[] pickups;
     [SerializeField] protected Portal portal;
-    [SerializeField] protected Accelerator accelerator;
     [SerializeField] protected PerfectJumpDetector jumpDetector;
 
     [SerializeField] protected int archMilkCount = 5;
@@ -29,7 +28,7 @@ public class Obstacler : ObstaclerBase
         }
     }
 
-    public RoadLine Generate(Building building, RoadLine startLine, bool isNeedToRise, bool isBridge = false)
+    public RoadLine Generate(Building building, RoadLine startLine, bool isBridge = false)
     {
         DepthTile = new LargeCell[3, building.GetSize().y / 3 ];
 
@@ -45,7 +44,7 @@ public class Obstacler : ObstaclerBase
 
         if (building.IsPortalFriendly)
         {
-            if (Portal.IsCanPlace && isNeedToRise == false) isPortalize = PortalPosition.Forward;
+            if (Portal.IsCanPlace) isPortalize = PortalPosition.Forward;
             if (Portal.IsWaitingForSecondPortal) isPortalize = PortalPosition.Backward;
         }
 
@@ -67,8 +66,8 @@ public class Obstacler : ObstaclerBase
             }
             else
             {
-                GenerateObstacles(building, isPortalize, isNeedToRise);
-                GeneratePickups(building, isPortalize);
+                GenerateObstacles(building, isPortalize);
+               GeneratePickups(building, isPortalize);
             }
 
         }
@@ -103,22 +102,22 @@ public class Obstacler : ObstaclerBase
         }
 
         // === Generate Pickup's on a turn === //
-        Vector3 startPoint = building.transform.InverseTransformPoint(turner.StartPoint.position) + Vector3.right * 0.746f * (int)line;
-        Vector3 endPoint = building.transform.InverseTransformPoint(turner.EndPoint.position) + Vector3.forward * 0.746f * (int)line * (turner.Direction == Direction.Left? 1 : -1);
+        Vector3 startPoint = (turner.StartPoint.position) + turner.transform.rotation * Vector3.right * 0.746f * (int)line;
+        Vector3 endPoint = (turner.EndPoint.position) + turner.transform.rotation * Vector3.forward * 0.746f * (int)line * (turner.Direction == Direction.Left? 1 : -1);
 
-        float milkCount = 5 + (int)line * (turner.Direction == Direction.Left? 2 : -2);
+        float milkCount = 10 + (int)line * (turner.Direction == Direction.Left? 3 : -3);
         float distance = Vector3.Distance( startPoint, endPoint );
 
-        for(float index = 0; index <= milkCount; index++)
+        for(float index = 1; index <= milkCount - 2; index++)
         {
-            Vector3 position = Vector3.Lerp(startPoint, endPoint, index / milkCount) + turner.ToCenterDirection.normalized * (Mathf.Sin( index / milkCount * Mathf.PI) * distance / 4 * 0.746f);
+            Vector3 position = building.transform.InverseTransformPoint(turner.Offset.position + turner.transform.rotation * Vector3.Slerp(turner.Offset.InverseTransformPoint(startPoint), turner.Offset.InverseTransformPoint(endPoint), index / milkCount));
 
             CreatePlaceable( milk, position, building.transform, isNeedToCorrectPosition: false );
         }
 
         // === Generate Pickup's on a end lines === //
 
-        Quaternion rotation = Quaternion.Euler(0, building.transform.eulerAngles.y + (turner.Direction == Direction.Left ? -90 : 90), 0);
+        Quaternion rotation = Quaternion.Euler(0, (turner.Direction == Direction.Left ? -90 : 90), 0);
 
         for (int x = -1; x < 2; x++)
         {
@@ -126,11 +125,15 @@ public class Obstacler : ObstaclerBase
             {
                 if (DepthTile[x + 1, y].IsPath == false || DepthTile[x + 1, y].IsObstacle || DepthTile[x + 1, y].IsEmpty == false) continue;
 
-                Vector3 position = (turner.transform.localPosition) + rotation * new Vector3(x, 0, y * 3 - (DepthTile.GetLength(1) / 2 * 3) + 3) * 0.746f + rotation * Vector3.forward * 0.373f;
+                Vector3 position = (turner.transform.localPosition) + rotation * new Vector3(x, 0, y * 3 - (DepthTile.GetLength(1) / 2 * 3) + 5.855927f) * 0.746f;
 
-                DepthTile[x + 1, y].AddPlaceable(CreatePlaceable(milk, position + rotation * Vector3.forward * 0.000f, building.transform, isNeedToCorrectPosition: false), 0);
-                DepthTile[x + 1, y].AddPlaceable(CreatePlaceable(milk, position + rotation * Vector3.forward * 0.746f, building.transform, isNeedToCorrectPosition: false), 1);
-                DepthTile[x + 1, y].AddPlaceable(CreatePlaceable(milk, position + rotation * Vector3.forward * 1.492f, building.transform, isNeedToCorrectPosition: false), 2);
+                for( int index = 0; index < 3; index++ )
+                {
+                    Placeable placeable = CreatePlaceable(milk, position + rotation * Vector3.forward * 0.746f * index, building.transform, isNeedToCorrectPosition: false);
+                    placeable.transform.rotation = rotation;
+                 
+                    DepthTile[x + 1, y].AddPlaceable(placeable, 0);
+                }
             }
         }
     }
@@ -182,7 +185,7 @@ public class Obstacler : ObstaclerBase
 
         // === Generate Obstacles's on a end lines === //
 
-        Quaternion rotation = Quaternion.Euler(0, building.transform.eulerAngles.y + (turner.Direction == Direction.Left ? -90 : 90), 0);
+        Quaternion rotation = Quaternion.Euler(0, (turner.Direction == Direction.Left ? -90 : 90), 0);
 
         for (int x = -1; x < 2; x++)
         {
@@ -198,7 +201,7 @@ public class Obstacler : ObstaclerBase
                 }
 
 
-                Vector3 position = (turner.transform.localPosition) + rotation * new Vector3(x, 0, y * 3 - (DepthTile.GetLength(1) / 2 * 3) + 4) * 0.746f + rotation * Vector3.forward * 0.373f;
+                Vector3 position = (turner.transform.localPosition) + rotation * new Vector3(x, 0, y * 3 - (DepthTile.GetLength(1) / 2 * 3) + 6.855927f) * 0.746f + rotation * Vector3.forward * 0.373f;
 
                 Obstacle obstacle = GetCorrectObstacle(building, x, y, PortalPosition.None);
 
@@ -207,7 +210,7 @@ public class Obstacler : ObstaclerBase
                 if (obstacle != null)
                 {
                     Placeable placeable = CreatePlaceable(obstacle, position, building.transform, isNeedToCorrectPosition: false);
-                    placeable.transform.rotation = rotation;
+                    placeable.transform.localRotation = rotation;
 
                     for (int obsX = 0; obsX < obstacle.Size.x; obsX++)
                     {
@@ -330,7 +333,7 @@ public class Obstacler : ObstaclerBase
     }
 
 
-    private void GenerateObstacles(Building building, PortalPosition isPortalize, bool isNeedToRise)
+    private void GenerateObstacles(Building building, PortalPosition isPortalize)
     {
         int nextBuildingIndex = 0;
         Obstacle obstacle = null;
@@ -357,9 +360,9 @@ public class Obstacler : ObstaclerBase
                             obstacle = obstacles[1];
                         else
                             obstacle = obstacles[0];
-                    }
 
-                    
+                        return;
+                    }   
                 }
 
                 Vector3 position = new Vector3( x, 0, y * 3 + 1);
@@ -372,7 +375,7 @@ public class Obstacler : ObstaclerBase
 
                     for (int obsX = 0; obsX < obstacle.Size.x; obsX++)
                     {
-                        for (int obsY = 0; obsY < Mathf.CeilToInt(obstacle.Size.y / 3f); obsY++)
+                        for (int obsY = 0; obsY < Mathf.CeilToInt((float)obstacle.Size.y / 3f); obsY++)
                         {
                             if (obstacle.IsEmpty[obsX, obsY]) continue;
 
@@ -380,19 +383,9 @@ public class Obstacler : ObstaclerBase
                         }
                     }
 
-                    nextBuildingIndex = Random.Range(1,4) + 1;
+                    nextBuildingIndex = Random.Range(2,4);
                 }
             }
-        }
-
-        if( isNeedToRise == true )
-        {
-            int y = DepthTile.GetLength(1) - 1;
-            int x = (int)GetPathLine(y);
-
-            Vector3 position = new Vector3( x, 0, y * 3 + 1 );
-
-            DepthTile[x + 1, y].AddPlaceable( CreatePlaceable(_rise, position, building.transform), 1 );
         }
     }
 
@@ -435,7 +428,7 @@ public class Obstacler : ObstaclerBase
                     int chance = Random.Range(0, 100);
 
 
-                    if (pickup.IsCanPlace == true && pickup.chance > chance)
+                    if (pickup.IsCanPlace == true && pickup.chance > chance && isPortalize == PortalPosition.None)
                     {
                         Placeable placeable = CreatePlaceable(pickup, new Vector3(x, 0, y * 3 + 1), building.transform);
                         DepthTile[x + 1, y].AddPlaceable(placeable, 1);
@@ -482,7 +475,7 @@ public class Obstacler : ObstaclerBase
 
         for(int y = 1; y < 5; y++)
         {
-            CreatePlaceable( milk, new Vector3( (int)endLine, 1.65f - (y * 1.65f / 4), y + building.GetSize().y + 3 ), building.transform );
+            CreatePlaceable( milk, new Vector3( (int)endLine, 1.65f - (y * 1.65f / 4) + 0.3f, y + building.GetSize().y + 3 ), building.transform );
         }
     }
 
@@ -525,27 +518,7 @@ public class Obstacler : ObstaclerBase
 
     private void GenerateStuff(Building building, PortalPosition isPortalize)
     {
-        //if (isPortalize != PortalPosition.None) return;
-
-        for (int x = -1; x < 2; x++)
-        {
-            for (int y = 0; y < (DepthTile.GetLength(1)); y++)
-            {
-
-                // === Accelerators ===
-                if (y < DepthTile.GetLength(1) - 1 && Random.Range(0,5) == 4)
-                {
-                    if ( DepthTile[x + 1, y].IsPath && DepthTile[x + 1, y + 1].IsPath && building.GetTileID( new Vector2Int(x + 1, y * 3 + 1) ) > 1)
-                    {
-                        Vector3 position = new Vector3( x, 0, y * 3 + 1);
-
-                        DepthTile[x + 1,y].AddPlaceable(CreatePlaceable(accelerator, position, building.transform), 1);
-                    }
-                }
-
-
-            }
-        }
+        
     }
 
 
@@ -585,11 +558,17 @@ public class Obstacler : ObstaclerBase
     }
 
 
+    // ===
+
+    private Obstacle[] possibleObstacles;
+    private Obstacle[] returnedObstacles;
+
     private Obstacle GetCorrectObstacle(Building building, int x, int y, PortalPosition isPortalize)
     {
         Vector2Int buildingSize = building.GetSize();
 
-        List<Obstacle> possibleObstacles = new List<Obstacle>();
+        possibleObstacles = new Obstacle[obstacles.Length];
+        int lastIndex = 0;
 
         foreach( Obstacle obstacle in obstacles )
         {
@@ -599,10 +578,16 @@ public class Obstacler : ObstaclerBase
 
             if (obstacle.IsCanPlaceHere(building, DepthTile, x, y, isPortalize) == false) continue;
 
-            possibleObstacles.Add(obstacle);
+            possibleObstacles[lastIndex] = obstacle;
+
+            lastIndex++;
         }
 
-        return possibleObstacles.Random();
+        System.Array.Resize(ref possibleObstacles, lastIndex);
+
+        Obstacle returnedObstacle = possibleObstacles[possibleObstacles.GetRandomIndexByChance()];
+
+        return returnedObstacle;
     }
 
 
@@ -610,7 +595,7 @@ public class Obstacler : ObstaclerBase
     {
         for (int obsX = 0; obsX < obstacle.Size.x; obsX++)
         {
-            for (int obsY = 0; obsY < Mathf.CeilToInt(obstacle.Size.y / 3f); obsY++)
+            for (int obsY = 0; obsY < Mathf.CeilToInt((float)obstacle.Size.y / 3f); obsY++)
             {
                 if (obstacle.IsEmpty[obsX, obsY]) continue;
 

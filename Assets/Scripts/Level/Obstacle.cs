@@ -33,12 +33,14 @@ public class Obstacle : Placeable, IGroundeable
 
     public virtual void DisableCollision()
     {
-        _collider.enabled = false;
+        if (_collider != null)
+            _collider.enabled = false;
     }
 
     public virtual void EnableCollision()
     {
-        _collider.enabled = true;
+        if(_collider != null)
+            _collider.enabled = true;
     }
 
     public void Awake()

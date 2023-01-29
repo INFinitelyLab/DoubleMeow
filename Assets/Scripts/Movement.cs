@@ -12,6 +12,7 @@ public class Movement : MonoBehaviour
     [SerializeField] private float _roadWidth;
     [SerializeField] private float _rotateRadius = 15;
     [SerializeField] private float _curveAroundHeight;
+    [SerializeField] private float _curveAroundWidth;
     [SerializeField] private GroundChecker _grounder;
 
     private bool _isParachuteControl;
@@ -59,6 +60,10 @@ public class Movement : MonoBehaviour
     public Vector3 InterpolatePosition => Position;
     public Vector3 InterpolateTurnPosition => TurnPosition;
 
+    public Vector3 LocalPosition => Position - TurnPosition;
+
+    public bool IsTurning => isTurning;
+
     public float RotateProgress { get; private set; }
     public float Height { get; private set; }
 
@@ -90,6 +95,13 @@ public class Movement : MonoBehaviour
         }
         
         return false;
+    }
+
+    public void JumpOnStart()
+    {
+        _velocity.y = _jumpForce / 1.5f;
+
+        Jumped?.Invoke();
     }
 
 
@@ -136,7 +148,7 @@ public class Movement : MonoBehaviour
         if(Game.Mode.InxAxIxRxMode)
             _targetPosition.x = Mathf.Clamp(_targetPosition.x + horizontal, -1.3f, 1.3f);
         else
-            _targetPosition.x = Mathf.Clamp(_targetPosition.x + horizontal, -1.1f, 1.1f);
+            _targetPosition.x = Mathf.Clamp(_targetPosition.x + horizontal, -1.3f, 1.3f);
 
         _verticalIntensive = Mathf.Clamp(_verticalIntensive + vertical, -1f, 1f);
 
@@ -156,6 +168,9 @@ public class Movement : MonoBehaviour
 
             Gizmos.color = Color.green;
             Gizmos.DrawLine( _transform.position, _turnPosition );
+
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine( _transform.position + Vector3.up, _turnPosition + Vector3.up);
         }
     }
 
@@ -165,12 +180,10 @@ public class Movement : MonoBehaviour
     private float _fixedTimeOffset;
     private float _lastUpdateTime;
 
-    private void Update()
+    public void GameUpdate()
     {
-        if (Time.deltaTime - _fixedTimeOffset > 0)
+        if (Time.deltaTime - _fixedTimeOffset > 0)// && isTurning == false)
             Tick(Time.deltaTime - _fixedTimeOffset);
-
-        //Debug.Log("Update Tick with deltaTime : " + (Time.deltaTime - _fixedTimeOffset));
         
         _fixedTimeOffset = 0;
     
@@ -179,11 +192,9 @@ public class Movement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if( Time.time - _lastUpdateTime > Time.fixedDeltaTime )
+        if( Time.time - _lastUpdateTime > Time.fixedDeltaTime)// && isTurning == false )
         {
             Tick(Time.fixedDeltaTime);
-
-            Debug.Log("FixedUpdate Tick with deltaTime : " + Time.fixedDeltaTime);
 
             _fixedTimeOffset += Time.fixedDeltaTime;
         }
@@ -195,6 +206,7 @@ public class Movement : MonoBehaviour
 
     private void Tick(float deltaTime)
     {
+
         grounded = _controller.isGrounded;
 
         if (_isVehicleControl == false && _isCurveControl == false && _inPortal == false && isFly == false)
@@ -203,7 +215,7 @@ public class Movement : MonoBehaviour
             {
                 if (_isParachuteControl == false)
                 {
-                    _velocity.y = (7 - _transform.position.y) * 2;
+                    _velocity.y = 0;
                 }
                 else
                 {
@@ -231,8 +243,8 @@ public class Movement : MonoBehaviour
         {
             if (_isCurveControl && isFly == false)
             {
-                _velocity.y = (0.05f + _curveAroundHeight - Position.y + (-Mathf.Cos((TurnPosition.x - Position.x) * 1.1f) * _curveAroundHeight)) / deltaTime;
-                Player.Presenter.OnRedraged( (Position.y - 0.05f) * 60f * ((TurnPosition.x - Position.x) > 0? -1 : 1));
+                _velocity.y = (0.05f + _curveAroundHeight - Position.y + (-Mathf.Cos((TurnPosition.x - Position.x) * _curveAroundWidth) * _curveAroundHeight - 0.075f)) / deltaTime;
+                Player.Presenter.OnRedraged( -30f * (TurnPosition.x - Position.x));
             }
 
             _velocity.x = ((TargetPosition.x + TurnPosition.x - Position.x) * _surfSpeed);
@@ -316,12 +328,11 @@ public class Movement : MonoBehaviour
 
         if
         (
-            Mathf.Abs((Quaternion.Inverse(_transform.rotation) * _controller.velocity).z) / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f &&
+            (Quaternion.Inverse(_transform.rotation) * _controller.velocity).z / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f &&
             Game.IsActive &&
-            Mathf.Abs((Quaternion.Inverse(_transform.rotation) * _previousControllerVelocity).z) / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f &&
+            (Quaternion.Inverse(_transform.rotation) * _previousControllerVelocity).z / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime) < 0.01f &&
             (Player.Presenter.InHulkMode == false || building != null) &&
-            Drone.Instance.IsEnabled == false &&
-            _velocity.z >= _walkSpeed * Game.Difficulty / 2
+            _velocity.z > _walkSpeed * Game.Difficulty / 1.5f
         )
         {
             Debug.Log("Velocity : " + _controller.velocity + " , RotatedVelocityZ : " + (Quaternion.Inverse(_transform.rotation) * _controller.velocity).z / Mathf.Min(Time.fixedDeltaTime, Time.deltaTime));
@@ -339,58 +350,63 @@ public class Movement : MonoBehaviour
 
     }
 
+
+    private Quaternion _futureRotation;
+    private Vector3 _futureTurnPosition;
+
+
     public IEnumerator RotateAround( Turner turner )
     {
+        Builder.Instance.DestroyAllTrash(false);
+
         Direction direction = turner.Direction;
-
-        Vector3 around = turner.transform.position;
-
-        Vector3 offset = turner.Offset.position;
-        Vector3 toCenterDirection = (turner.transform.position - turner.Offset.position) / 2;
 
         Quaternion startRotation = _transform.rotation;
         Quaternion rotation = Quaternion.Euler(0, _transform.eulerAngles.y + (direction == Direction.Left ? -90 : 90), 0);
 
-        float distance = Mathf.Abs( turner.StartPoint.localPosition.x - turner.EndPoint.localPosition.x ) * Mathf.PI / 2;
+        Vector3 offset = turner.Offset.position;
 
-        RegenTrigger.Instance.MoveTo( turner.EndPoint.position );
-        RegenTrigger.Instance.transform.rotation = rotation;
-        
+        Vector3 startPoint = turner.StartPoint.position;
+        Vector3 endPoint = turner.EndPoint.position;
+
+        float distanceBtwPoints = Vector3.Distance(startPoint, endPoint);
+
         isTurning = true;
 
         RotateProgress = 0;
 
-        Player.Camera.EnableTurnMode(turner);
-
         Quaternion lastRotation = _transform.rotation;
 
-        while (RotateProgress < 90 )
+        Player.Camera.EnableTurnMode(turner);
+
+        while (RotateProgress < 90)
         {
-            distance = Mathf.Abs(turner.StartPoint.localPosition.x - turner.EndPoint.localPosition.x + (int)_line * 0.746f) * Mathf.PI / 2;
+            _transform.right = new Vector3(_transform.position.x - offset.x, 0, _transform.position.z - offset.z) * (direction == Direction.Left ? 1 : -1);
 
-            RotateProgress += (_velocity.z * (Time.deltaTime > Time.fixedDeltaTime ? Time.fixedDeltaTime : Time.deltaTime) * 90) / distance;
+            _turnPosition = turner.Offset.position + startRotation * Vector3.Slerp(turner.Offset.InverseTransformPoint(startPoint), turner.Offset.InverseTransformPoint(endPoint), RotateProgress / 90);// + startRotation * turner.ToCenterDirection.normalized * Mathf.Pow(Mathf.Sin(RotateProgress / 90 * Mathf.PI) + 0.0000001f, 0.75f) * distanceBtwPoints / 4 * 0.85f;
+            
+            RotateProgress += (Mathf.Abs(_transform.eulerAngles.y.NormalizeRotation() - lastRotation.eulerAngles.y.NormalizeRotation()));
 
-            _transform.rotation = Quaternion.Lerp(startRotation, rotation, RotateProgress / 90 + Mathf.Sin(RotateProgress / 90 * Mathf.PI) * 0.125f);
-
-            _turnPosition = Vector3.Lerp( turner.StartPoint.position, turner.EndPoint.position, RotateProgress / 90 ) + toCenterDirection * Mathf.Sin( RotateProgress / 90 * Mathf.PI ) / 2;
-
-            if (RotateProgress >= 90) _transform.rotation = rotation;
+            if (RotateProgress >= 90)
+            {
+                _transform.rotation = rotation;
+                _turnPosition = turner.EndPoint.position;
+                RotateProgress = 90;
+            }
 
             lastRotation = _transform.rotation;
 
-            if (Time.deltaTime > Time.fixedDeltaTime)
-                yield return new WaitForFixedUpdate();
-            else
-                yield return null;
+            yield return null;
         }
 
-        _turnPosition = around;
+        isTurning = false;
+
+        RegenTrigger.Instance.MoveTo(endPoint);
+        RegenTrigger.Instance.transform.rotation = rotation;
 
         Player.Camera.DisableTurnMode();
 
         Shader.SetGlobalFloat("_MetroRotation", rotation.eulerAngles.y);
-
-        isTurning = false;
     }
 
 
@@ -412,6 +428,8 @@ public class Movement : MonoBehaviour
 
     public void OnRegenerate()
     {
+        _isControlled = true;
+
         _velocity.z = 0;
         _previousControllerVelocity = Vector3.one;
 
@@ -425,6 +443,8 @@ public class Movement : MonoBehaviour
             return;
 
         _isVehicleControl = true;
+
+        _controller.radius *= 2;
 
         _velocity.y = 0;
         if (isFly == false) _controller.Move( Vector3.up * (-0.5f - Position.y) );
@@ -441,9 +461,12 @@ public class Movement : MonoBehaviour
 
         _isVehicleControl = false;
 
+        _controller.radius /= 2;
+
         _line = (RoadLine)( TargetPosition.x / _roadWidth);
         _targetPosition.x = _line.ToInt() * _roadWidth;
 
+        if (Drone.IsExist)
         if (Drone.Instance.IsEnabled == false)
         {
             _velocity.z = 30 * Game.Difficulty;
@@ -458,7 +481,10 @@ public class Movement : MonoBehaviour
 
     public void EnableCurveControl()
     {
-        _isNeedToEnableCurveControl = true;
+        if (Game.InMiniGames)
+            _isCurveControl = true;
+        else
+            _isNeedToEnableCurveControl = true;
 
         Grounded?.Invoke(true);
         RepositeCamera?.Invoke(0);
@@ -468,13 +494,19 @@ public class Movement : MonoBehaviour
 
     public void DisableCurveControl(bool isFly = true, RoadLine line = RoadLine.Venus)
     {
+        if (_isCurveControl == false)
+            return;
+
         _isCurveControl = false;
 
         if (isFly)
         {
-            _velocity.y = 6f - (Position.y * 1.5f);
-            
-            Player.Presenter.DisableCurveMode();
+            if (Drone.Instance.IsEnabled == false)
+            {
+                _velocity.y = 6f - (Position.y * 1.5f);
+
+                Player.Presenter.DisableCurveMode();
+            }
         }
         else
         {
@@ -485,9 +517,9 @@ public class Movement : MonoBehaviour
             _isControlled = false;
 
             _controller.stepOffset = 0;
+        
+            _line = line;
         }
-
-        _line = line;
 
         Grounded?.Invoke(false);
 
@@ -528,6 +560,8 @@ public class Movement : MonoBehaviour
         _targetPosition.x = Position.x - TurnPosition.x;
 
         _isAIRControl = true;
+
+        _velocity.z = 5;
     }
 
     public void DisablexAxIxRxControl()

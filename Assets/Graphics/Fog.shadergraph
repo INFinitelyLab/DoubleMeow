@@ -4,6 +4,12 @@
     "m_ObjectId": "c14f3cf640174516b8c35bd8fba73248",
     "m_Properties": [
         {
+            "m_Id": "aae6c253ea4c48acb3c171a47b0975ef"
+        },
+        {
+            "m_Id": "7097cf48844c4b438bc068fa810f37b3"
+        },
+        {
             "m_Id": "548d72bb2a874842a43d908e94d8d98d"
         },
         {
@@ -701,6 +707,36 @@
 }
 
 {
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "7097cf48844c4b438bc068fa810f37b3",
+    "m_Guid": {
+        "m_GuidSerialized": "b48d3615-c8a8-48e7-a1b4-64fc32083e73"
+    },
+    "m_Name": "Dither Pattern",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "Dither Pattern",
+    "m_DefaultReferenceName": "_Dither_Pattern",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "isMainTexture": false,
+    "useTilingAndOffset": false,
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
     "m_SGVersion": 1,
     "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalTarget",
     "m_ObjectId": "7a16d2cf980b4113b25ccc716b74d8a3",
@@ -858,6 +894,34 @@
     },
     "m_Labels": [],
     "m_Space": 0
+}
+
+{
+    "m_SGVersion": 1,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector1ShaderProperty",
+    "m_ObjectId": "aae6c253ea4c48acb3c171a47b0975ef",
+    "m_Guid": {
+        "m_GuidSerialized": "71dc867b-31e4-4b50-9281-c9a260a2dd32"
+    },
+    "m_Name": "Dither Intensity",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "Dither Intensity",
+    "m_DefaultReferenceName": "_Dither_Intensity",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": false,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": 0.0,
+    "m_FloatType": 0,
+    "m_RangeValues": {
+        "x": 0.0,
+        "y": 100.0
+    }
 }
 
 {
@@ -1203,6 +1267,12 @@
         },
         {
             "m_Id": "e8162e1513ef48e09e1828089d3580f4"
+        },
+        {
+            "m_Id": "aae6c253ea4c48acb3c171a47b0975ef"
+        },
+        {
+            "m_Id": "7097cf48844c4b438bc068fa810f37b3"
         }
     ]
 }

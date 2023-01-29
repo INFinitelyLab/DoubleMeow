@@ -18,18 +18,6 @@ public class Player : SingleBehaviour<Player>, IGroundeable
             return Instance._detector;
         }
     }
-
-    public static Presenter Presenter
-    {
-        get
-        {
-            if (Instance._presenter == null)
-                throw new Exception("Модуль представления не назначен!");
-
-            return Instance._presenter;
-        }
-    }
-
     public static Movement Movement
     {
         get
@@ -40,7 +28,16 @@ public class Player : SingleBehaviour<Player>, IGroundeable
             return Instance._movement;
         }
     }
+    public static Presenter Presenter
+    {
+        get
+        {
+            if (Instance._presenter == null)
+                throw new Exception("Модуль представления не назначен!");
 
+            return Instance._presenter;
+        }
+    }
     public static FollowCamera Camera
     {
         get
@@ -52,12 +49,10 @@ public class Player : SingleBehaviour<Player>, IGroundeable
         }
     }
 
-
     public static Action Jumped;
-
+    public static Action<float> RepositeCamera;
     public static Action<Direction, float> Redirected;
 
-    public static Action<float> RepositeCamera;
 
 
     protected override void OnActive()

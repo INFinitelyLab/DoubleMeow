@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CurveTrigger : MonoBehaviour
+public class CurveTrigger : Trashable
 {
     [SerializeField] private bool _isNeedToEnableMetroMode;
 

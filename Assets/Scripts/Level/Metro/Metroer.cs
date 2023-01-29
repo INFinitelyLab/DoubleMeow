@@ -7,6 +7,7 @@ public class Metroer : MonoBehaviour
     [SerializeField] private RegenTrigger _regenTrigger;
     [SerializeField] private Building _metroStartPrefab;
     [SerializeField] private Building _metroPrefab;
+    [SerializeField] private GameObject _ring;
     [SerializeField] private Milk _milk;
     [SerializeField] private int _milkCount;
     [SerializeField] private float _milkSurfIntensity;
@@ -32,6 +33,8 @@ public class Metroer : MonoBehaviour
 
     public System.Action<Vector3> EndGenerate;
 
+    public bool IsEnabled { get; private set; }
+
 
     public void Spawn(Vector3 from, Quaternion rotation, System.Action<Vector3> OnEndMethod)
     {
@@ -55,18 +58,7 @@ public class Metroer : MonoBehaviour
         _regenTrigger.Triggered += Regenerate;
         _startPosition = from;
 
-        CreateRegeneratePoint();
-    }
-
-
-    public void CreateRegeneratePoint()
-    {
-        Vector3 position = _startPosition + _rotation * Vector3.forward * (Mathf.Ceil(_targetMetroDistance / _metroPrefab.EndPoint.localPosition.z) * _metroPrefab.EndPoint.localPosition.z + 10);
-
-        GameObject regenerationPoint = new GameObject();
-
-        regenerationPoint.transform.position = position;
-        regenerationPoint.AddComponent<RegeneratePoint>();
+        IsEnabled = true;
     }
 
 
@@ -105,18 +97,14 @@ public class Metroer : MonoBehaviour
     {
         float targetDistance = Vector3.Distance(_player.position, _startPosition) + _generationDistance;
 
-        Building metro = null;
-
         while (_distance < targetDistance)
         {
-            metro = CreateNewBuilding(_metroPrefab, _startPosition + _rotation * Vector3.forward * _distance, _rotation);
-
-            _lastMetro = metro;
+            _lastMetro = CreateNewBuilding(_metroPrefab, _startPosition + _rotation * Vector3.forward * _distance, _rotation);
 
             _distance += _metroPrefab.EndPoint.transform.localPosition.z;
         }
 
-        if (_distance + 5 < _targetMetroDistance && Drone.Instance.IsEnabled == false)
+        if (_distance + 5 < _targetMetroDistance)
         {
             while( _vehicleDistance < targetDistance )
             {
@@ -158,14 +146,27 @@ public class Metroer : MonoBehaviour
 
         if (_distance >= _targetMetroDistance )
         {
-            MetroTrigger mT = Instantiate(_metroTrigger, metro.transform);
+            MetroTrigger mT = Instantiate(_metroTrigger, _lastMetro.transform);
+            GameObject ring = Instantiate( _ring, _lastMetro.transform );
 
-            mT.transform.localPosition = metro.EndPoint.localPosition + Vector3.back * 5f * Game.Difficulty;
+            mT.transform.localPosition = _lastMetro.EndPoint.localPosition + Vector3.back * 5f * Game.Difficulty;
+            ring.transform.localPosition = _lastMetro.EndPoint.localPosition;
 
             _regenTrigger.Triggered -= Regenerate;
 
             EndGenerate?.Invoke(_rotation * Vector3.forward * _distance + _startPosition);
+
+            IsEnabled = false;
         }
+    }
+
+    public void Disable()
+    {
+        IsEnabled = false;
+
+        _regenTrigger.Triggered -= Regenerate;
+
+        EndGenerate?.Invoke(default);
     }
 
 
@@ -175,7 +176,7 @@ public class Metroer : MonoBehaviour
 
         bool isActive = false;
 
-        while(isActive == false)
+        while(isActive == false && toActive != null)
         {
             if (Mathf.Abs(_player.position.z - toActive.transform.position.z) < _generationDistance)
             {

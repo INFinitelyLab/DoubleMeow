@@ -17,6 +17,8 @@ public class RegenTrigger : SingleBehaviour<RegenTrigger>
 
     public void MoveTo(Vector3 position)
     {
+        if (Game.PassedTime > 3) transform.rotation = Player.Movement.transform.rotation;
+
         transform.position = position;
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
 public class CurveObstacler : ObstaclerBase
 {
@@ -12,16 +14,16 @@ public class CurveObstacler : ObstaclerBase
     protected Cell[,] Cells;
 
 
-    public RoadLine Generate(Curve curve, RoadLine startLine)
+    public int Generate(Curve curve, int startIntLine)
     {
         Vector2Int size = curve.GetSize();
 
         Cells = new Cell[size.x, size.y];
 
-        GenerateSolarPanels(curve);
-        GenerateMilk(curve, startLine, out RoadLine endLine);
+        //GenerateSolarPanels(curve);
+        GenerateMilk(curve, startIntLine, out int EndIntLine);
 
-        return endLine;
+        return EndIntLine;
     }
 
 
@@ -33,42 +35,47 @@ public class CurveObstacler : ObstaclerBase
         {
             Transform point = curve.PositionsForSolarPanels[index];
 
-            if (Mathf.Abs(point.localPosition.x) > 0.1f || Random.Range(0, 2) == 0)
-                CreatePlaceable( dynamicSolarPanelPrefab, Vector3.zero, point );
+            CreatePlaceable( dynamicSolarPanelPrefab, Vector3.zero, point );
         }
     }
 
-    private void GenerateMilk(Curve curve, RoadLine startLine, out RoadLine endLine)
+    private void GenerateMilk(Curve curve, int startIntLine, out int EndIntLine)
     {
+        Vector2Int positionInt = new Vector2Int();
         Vector2Int size = curve.GetSize();
 
-        RoadLine line = startLine;
+        List<int> isEmptyTile = new List<int>(5);
+
+        int line = startIntLine;
 
         for( int y = 0; y < size.y; y++ )
         {
             /// === Check for surf line === //
-            if( curve.GetTileID( new Vector2Int( (int)line + 1, y ) ) == 0 )
+
+            positionInt.x = line + 2;
+            positionInt.y = y;
+            if ( curve.GetTileID( positionInt ) == 0 )
             {
-                int surfDirections = 0;
+                for(int x = 0; x < 5; x++)
+                {
+                    positionInt.x = x;
 
-                if (curve.GetTileID(new Vector2Int((int)line, y)) == 1)
-                    surfDirections += 1;
-                if (curve.GetTileID(new Vector2Int((int)line + 2, y)) == 1)
-                    surfDirections += 2;
+                    if (curve.GetTileID(positionInt) > 0)
+                        isEmptyTile.Add(x - 2);
+                }
 
-                if (surfDirections == 3)
-                    line.TrySurfRandom();
-                else
-                    line.TrySurf( surfDirections == 1? Direction.Left : Direction.Right );
+                line = isEmptyTile.Random();
+
+                isEmptyTile.Clear();
             }
 
-            Vector3 position = new Vector3((int)line * -_cellSize.x * 0.7f, line == RoadLine.Venus ? 0 : 0.4f, y * _cellSize.y + (_cellSize.y / 4));
+            Vector3 position = new Vector3((int)line * -_cellSize.x * 0.8f, Mathf.Pow( Mathf.Abs(line) / 1.2f + 0.001f, 1.5f ) / 4 - 0.01f, y * _cellSize.y + (_cellSize.y / 4));
 
-            CreatePlaceable(milk, position - Vector3.forward * 0.25f, curve.transform);
-            CreatePlaceable(milk, position + Vector3.forward * 0.25f, curve.transform);
+            if((y) % 6 != 0 && (y+2) % 6 != 0)
+                CreatePlaceable(milk, position, curve.transform);
         }
 
-        endLine = line;
+        EndIntLine = line;
     }
 
 

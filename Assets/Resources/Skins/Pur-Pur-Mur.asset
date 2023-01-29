@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59a66b94cfc56454f802a1c17dcb2e81, type: 3}
   m_Name: Pur-Pur-Mur
   m_EditorClassIdentifier: 
-  _material: {fileID: 2100000, guid: 3f2deb73bee5f7f479b29408574c5cc7, type: 2}
-  _codeName: purple_meow
-  _name: Purple Meow
-  _uuid: b47u57n8
-  _cost: 10000
+  <Icon>k__BackingField: {fileID: 21300000, guid: f8c9467a892580344bb697526dac0d13, type: 3}
+  <Name>k__BackingField: Bomb!
+  <ProductID>k__BackingField: Bomb
+  <Price>k__BackingField: 150
+  <PurchaseType>k__BackingField: 1
+  <IsDonateItem>k__BackingField: 1
+  <Material>k__BackingField: {fileID: -2813467912831258332, guid: 8106364526f2baf41acf7b06ecca871b, type: 3}

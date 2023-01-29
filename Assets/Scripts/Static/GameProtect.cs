@@ -62,8 +62,6 @@ public sealed class Secure
 		string secondDecryptValue = Revert(Revert(data.secondValue, secondKey), name);
 		string thirdDecryptValue = Revert(Revert(data.thirdValue, thirdKey), name);
 
-		//Debug.Log( "Hi Decrypt : name(" + name + "), : " + firstDecryptValue + " , " + secondDecryptValue + " , " + thirdDecryptValue );
-
 		return firstDecryptValue == secondDecryptValue && secondDecryptValue == thirdDecryptValue ? firstDecryptValue : "";
 	}
 
@@ -106,6 +104,9 @@ public sealed class SecureInt
 
 		_secure.SetData( Secure.Encrypt(newValue.ToString(), name) );
 	}
+
+
+	public void Decrease(int value) => Increase(-value);
 
 
 	public static implicit operator int(SecureInt value)

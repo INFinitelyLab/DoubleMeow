@@ -4,9 +4,9 @@ using System.Collections;
 
 public class Presenter : MonoBehaviour
 {
-    [SerializeField] private GameObject _ownParachute;
-    [SerializeField] private GameObject _ownVehicle;
-    [SerializeField] private GameObject _ownUFO;
+    [SerializeField] private Transform _ownParachute;
+    [SerializeField] private Transform _ownVehicle;
+    [SerializeField] private Transform _ownUFO;
     [SerializeField] private Animator _animator;
     [SerializeField] private float _bendIntensive;
     [SerializeField] private float _bendSmoothTime;
@@ -22,6 +22,7 @@ public class Presenter : MonoBehaviour
 
     private float _moveSpeed = 1;
 
+    private Vector3 _defaultUFOPosition;
 
     private Vector3 _scale = Vector3.one * 0.7f;
     private Vector3 _startScale;
@@ -29,6 +30,7 @@ public class Presenter : MonoBehaviour
     private float _rescaleTime;
 
     public Transform Head => _head;
+    public Animator Animator => _animator;
 
     public bool InHulkMode { get; private set; }
 
@@ -36,16 +38,24 @@ public class Presenter : MonoBehaviour
     private void Awake()
     {
         Shader.SetGlobalFloat("_CurvatureIntensive", 0);
+        Shader.SetGlobalFloat("_Dither_Intensity", 0);
 
         _transform = transform;
         _startScale = _transform.localScale;
         _targetScale = _transform.localScale;
-    }
 
+        _defaultUFOPosition = _ownUFO.transform.localPosition;
+    }
 
     private void Start()
     {
-        if( Stats.selectedSkin != "" ) _mesh.sharedMaterial = Skin.Find(Stats.selectedSkin).Material;
+        UpdateSkin();
+    }
+
+
+    public static void UpdateSkin()
+    {
+        if (Skin.Current != null) Player.Presenter._mesh.material = Skin.Current.Material;
     }
 
 
@@ -64,6 +74,19 @@ public class Presenter : MonoBehaviour
     public void OnUndrone()
     {
         _animator.SetBool("InDrone", false);
+
+        _animator.ResetTrigger("Bump");
+    }
+
+
+    public void Fog()
+    {
+        StartCoroutine(Ditherization(true, 1));
+    }
+
+    public void Unfog()
+    {
+        StartCoroutine(Ditherization(false, 1));
     }
 
 
@@ -126,7 +149,7 @@ public class Presenter : MonoBehaviour
     {
         _bendSmoothTime /= 7f;
 
-        Invoke(nameof(_EnableUFO), 0.2f);
+        _EnableUFO();
     }
 
     public void DisablexAxIxRxMode()
@@ -134,6 +157,12 @@ public class Presenter : MonoBehaviour
         _bendSmoothTime *= 7f;
 
         Invoke(nameof(_DisableUFO), 0.2f);
+    }
+
+    public void RepositeUFO(Vector3 position)
+    {
+        _ownUFO.position = position;
+        _ownUFO.rotation = Player.Movement.transform.rotation;
     }
 
 
@@ -154,18 +183,21 @@ public class Presenter : MonoBehaviour
 
     public void EnableVehicleMode()
     {
-        _ownVehicle.SetActive(true);
+        _ownVehicle.gameObject.SetActive(true);
 
         _animator.SetBool("InVehicle", true);
 
         _bendSmoothTime /= 2f;
 
-        Invoke(nameof(EnableCurvatization), 1f);
+        if (Game.InMiniGames)
+            StartCoroutine(Curvatization(true, 999));
+        else
+            Invoke(nameof(EnableCurvatization), 1f);
     }
 
     public void DisableVehicleMode()
     {
-        _ownVehicle.SetActive(false);
+        _ownVehicle.gameObject.SetActive(false);
 
         _animator.SetBool("InVehicle", false);
 
@@ -175,13 +207,15 @@ public class Presenter : MonoBehaviour
 
     public void CreateGhostVehicle()
     {
-        GameObject vehicle = Instantiate(_ownVehicle);
+        GameObject vehicle = Instantiate(_ownVehicle.gameObject);
 
         vehicle.SetActive(true);
 
         vehicle.transform.rotation = _ownVehicle.transform.rotation;
         vehicle.transform.position = _ownVehicle.transform.position;
         vehicle.transform.localScale = _ownVehicle.transform.lossyScale;
+
+        Destroy(vehicle, 10);
     }
 
 
@@ -228,6 +262,9 @@ public class Presenter : MonoBehaviour
         _targetRotation.y = Mathf.Lerp(_targetRotation.y, 0, _moveSpeed * _bendSmoothTime * Time.deltaTime);
         _targetRotation.z = Mathf.Lerp(_targetRotation.z, 0, _moveSpeed * _bendSmoothTime * Time.deltaTime);
 
+        _ownUFO.localPosition = Vector3.Lerp( _ownUFO.localPosition, _defaultUFOPosition, 5 * Time.deltaTime );
+        _ownUFO.localRotation = Quaternion.Lerp( _ownUFO.localRotation, Quaternion.identity, 5 * Time.deltaTime );
+
         _moveSpeed = Mathf.MoveTowards( _moveSpeed, 1 , Time.deltaTime );
 
         _transform.localScale = Vector3.MoveTowards(_transform.localScale, _scale, (_rescaleTime * Game.Difficulty) * Time.deltaTime);
@@ -248,6 +285,23 @@ public class Presenter : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
     }
+
+    public IEnumerator Ditherization(bool isEnable, float duration)
+    {
+        float endValue = isEnable ? 1 : 0;
+        float value = 1 - endValue;
+
+        while (value != endValue)
+        {
+            value = Mathf.MoveTowards(value, endValue, duration * Time.fixedDeltaTime);
+
+            RenderSettings.fogStartDistance = Mathf.Lerp(15, 0, value);
+            RenderSettings.fogEndDistance = Mathf.Lerp(30, 0, value);
+
+            yield return new WaitForFixedUpdate();
+        }
+    }
+
 
     public IEnumerator Upscale( float targetScale )
     {
@@ -313,14 +367,14 @@ public class Presenter : MonoBehaviour
 
     private void _EnableUFO()
     {
-        _ownUFO.SetActive( true );
+        _ownUFO.gameObject.SetActive( true );
 
         _animator.SetBool("InVehicle", true);
     }
 
     private void _DisableUFO()
     {
-        _ownUFO.SetActive(false);
+        _ownUFO.gameObject.SetActive(false);
 
         _animator.SetBool("InVehicle", false);
     }
@@ -328,7 +382,7 @@ public class Presenter : MonoBehaviour
 
     private void _EnableParachute()
     {
-        _ownParachute.SetActive(true);
+        _ownParachute.gameObject.SetActive(true);
 
         _ownParachute.GetComponent<Animator>().SetTrigger("Open");
 
@@ -337,7 +391,7 @@ public class Presenter : MonoBehaviour
 
     private void _DisableParachute()
     {
-        _ownParachute.SetActive(false);
+        _ownParachute.gameObject.SetActive(false);
 
         _ownParachute.GetComponent<Animator>().SetTrigger("Close");
 

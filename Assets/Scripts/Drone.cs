@@ -7,6 +7,7 @@ public class Drone : SingleBehaviour<Drone>
     [SerializeField] private Transform[] _rotors;
 
     private Coroutine _routine;
+    private RegeneratePoint _point;
 
     public bool IsEnabled { get; private set; }
     public bool IsTranslateFromMode { get; private set; }
@@ -25,23 +26,17 @@ public class Drone : SingleBehaviour<Drone>
     {
         transform.rotation = Player.Movement.transform.rotation;
 
+        Player.Movement.transform.position = new Vector3( Player.Movement.transform.position.x, Mathf.Max(Player.Movement.transform.position.y, -2 + Player.Movement.Height), Player.Movement.transform.position.z );
+
+        Vector3 playerPosition = Player.Movement.transform.position;
+        Vector3 point = Player.Movement.TurnPositionWithoutRotation;
+
         Player.Movement.enabled = false;
         Player.Camera.enabled = false;
 
-        Vector3 playerPosition = Player.Movement.transform.position;
-        Vector3 closestPoint = Vector3.zero;
-        float closestDistance = 999;
+        point.y = 0;
 
-        foreach (RegeneratePoint point in FindObjectsOfType<RegeneratePoint>())
-        {
-            if (Vector3.Distance(point.transform.position, playerPosition) < closestDistance)
-            {
-                closestPoint = point.transform.position;
-                closestDistance = Vector3.Distance(point.transform.position, playerPosition);
-            }
-        }
-
-        _routine = StartCoroutine( Translate(playerPosition, closestPoint) );
+        _routine = StartCoroutine( Translate(playerPosition, point ) );
     }
 
     public void Disable()
@@ -54,40 +49,81 @@ public class Drone : SingleBehaviour<Drone>
     {
         IsEnabled = true;
 
-        IsTranslateFromMode = Game.Mode.InVehicleMode;
+        IsTranslateFromMode = Game.Mode.InVehicleMode || Game.Mode.InCurveMode;
+
+        bool isMetroMode = Game.Mode.InVehicleMode;
+        bool isCurveMode = Game.Mode.InCurveMode;
+        bool isTilerMode = Player.Camera.InTilerMode;
 
         Vector3 normalizedPlayerPosition = playerPosition;
         normalizedPlayerPosition.y = Mathf.Max(playerPosition.y, Player.Movement.Height);
 
-        Vector3 startPosition = normalizedPlayerPosition + ( Player.Movement.transform.rotation * Vector3.back * 3 );
-        Vector3 endPosition = point + ( Player.Movement.transform.rotation * Vector3.back * 3 );
-        Vector3 offset = new Vector3(0, 1f, 0);
-        Vector3 lowerOffset = new Vector3(0,0.5f,0);
+        Vector3 offset = new Vector3(0, 2f, 0);
+        Vector3 lowerOffset = new Vector3(0,0.65f,0);
 
-        yield return StartCoroutine( MoveTo( startPosition + offset, normalizedPlayerPosition + offset, 1.5f ) );    // Подлет
+        Fog.Instance.gameObject.SetActive(true);
 
-        yield return StartCoroutine( MoveTo( normalizedPlayerPosition + offset, playerPosition + lowerOffset, 1 ));  // Снижение
+        StartCoroutine( MoveTo( normalizedPlayerPosition + offset, playerPosition + lowerOffset, 1.75f ));  // Снижение
 
-        Player.Movement.transform.parent = transform;
-        Player.Presenter.OnDrone();
+        yield return new WaitForSeconds(0.75f);
 
-        if( IsTranslateFromMode )
-        {   
+        if (isMetroMode)
+        {
             Player.Presenter.CreateGhostVehicle();
+            Shader.SetGlobalFloat("_CurvatureIntensive", 0);
         }
 
         Game.Mode.DisableAllModes();
+        Player.Presenter.OnDrone();
 
-        yield return StartCoroutine( MoveTo(playerPosition + lowerOffset, normalizedPlayerPosition + offset, 1 ));  // Возвышение
+
+        yield return new WaitForSeconds(1f);
+
+        Player.Movement.transform.parent = transform;
+        
+
+        Player.Presenter.Fog();
+
+        yield return StartCoroutine( MoveTo(playerPosition + lowerOffset, normalizedPlayerPosition + offset, 1.5f));  // Возвышение
+
 
         Player.Camera.transform.parent = transform;
 
-        yield return StartCoroutine( MoveTo(normalizedPlayerPosition + offset, point + offset, 1, true ) );    // Транспортировка
+        transform.position = point + offset;
 
+        Builder.Instance.DestroyAllTrash(true);
+
+        if (Builder.Instance.Metroer.IsEnabled) Builder.Instance.Metroer.Disable();
+        if (Builder.Instance.Curver.IsEnabled) Builder.Instance.Curver.Disable();
+        if (Builder.Instance.Tiler.IsEnabled) Builder.Instance.Tiler.Disable();
+        if (Builder.Instance.Retroer.IsEnabled) Builder.Instance.Retroer.Disable();
+
+        if ( isMetroMode )
+        {
+            Player.Presenter.DisableCurvatization();
+            Player.Camera.DisableMetroMode(false);
+        }
+        else if( isCurveMode )
+        {
+            Builder.Instance.Curver.Disable();
+            Player.Presenter.DisableCurveMode();
+        }
+
+        Builder.Instance.CreateBuildingFrom(point + Player.Movement.transform.rotation * Vector3.back * 5, Player.Movement.transform.rotation);
+
+
+        Player.Presenter.Unfog();
+
+        Player.Camera.OnRegenerate(point);
         Player.Camera.transform.parent = null;
 
+        StartCoroutine( MoveTo( point + offset, point + lowerOffset, 1.75f)); // Снижение
+
+        yield return new WaitForSeconds(0.75f);
+
         Player.Presenter.OnUndrone();
-        yield return StartCoroutine( MoveTo( point + offset, point + lowerOffset, 1 )); // Снижение
+
+        yield return new WaitForSeconds(1f);
 
         Player.Movement.transform.parent = null;
 
@@ -102,9 +138,7 @@ public class Drone : SingleBehaviour<Drone>
         IsTranslateFromMode = false;
         IsEnabled = false;
 
-        yield return StartCoroutine( MoveTo( point + lowerOffset, point + offset, 1 )); // Возвышение
-        
-        yield return StartCoroutine( MoveTo( point + offset, endPosition + offset, 1 ) );   // Улет
+        yield return StartCoroutine( MoveTo( point + lowerOffset, point + offset, 1.5f)); // Возвышение
     }
 
 

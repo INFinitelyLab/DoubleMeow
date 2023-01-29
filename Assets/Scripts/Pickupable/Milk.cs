@@ -14,16 +14,14 @@ public class Milk : Pickup
         _transform = transform;
         _body = _transform.GetChild(0);
 
-        _body.localRotation = Quaternion.Euler( 0, _transform.position.z * 36, 0 );
+        _body.rotation = Quaternion.Euler( 0, (_transform.position.x + _transform.position.z) * 36, 0 );
      }
 
     protected override void OnPickup()
     {
-        Stats.IncreaseCoin( Game.Mode.InDoubleMode? 2 : 1 );
+        Game.OnMilkCollected();
 
-        ParticleManager.Play( "MilkFlash", Player.Presenter.Head.position );
-
-        Achievements.Unlock("1234");
+        ParticleManager.Play( "MilkFlash", _transform.position );
     }
 
     private void Update()

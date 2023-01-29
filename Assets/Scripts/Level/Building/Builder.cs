@@ -12,11 +12,13 @@ public class Builder : SingleBehaviour<Builder>
     [SerializeField] private List<DecorationBuilding> _decoPrefabs;
     [SerializeField] private DecorationBuilding _decoTurnPrefab;
     [SerializeField] private Building _startBuilding;
+    [SerializeField] private Building _realStartBuilding;
     [SerializeField] private Building _bridge;
     [SerializeField] private Building _vehicle;
     [SerializeField] private Building _train;
     [SerializeField] private Building _buildingWhoTurnLeft;
     [SerializeField] private Building _buildingWhoTurnRight;
+    [SerializeField] private Building _upper;
     [SerializeField] private LoseTrigger _loseTrigger;
     [SerializeField] private float _vehiclePropastWidth;
 
@@ -26,6 +28,7 @@ public class Builder : SingleBehaviour<Builder>
     [SerializeField] private Metroer _metroer;
     [SerializeField] private Curver _curver;
     [SerializeField] private Tiler _tiler;
+    [SerializeField] private Retrowaver _retrowaver;
     [SerializeField] private float _buildingWidth;
     [SerializeField] private int _startCount;
 
@@ -36,6 +39,7 @@ public class Builder : SingleBehaviour<Builder>
     public Metroer Metroer => _metroer;
     public Curver Curver => _curver;
     public Tiler Tiler => _tiler;
+    public Retrowaver Retroer => _retrowaver;
 
     private Quaternion _rotation;
 
@@ -51,9 +55,11 @@ public class Builder : SingleBehaviour<Builder>
     private bool _isNeedToEnableMetroMode;
     private bool _isNeedToEnableTilerMode;
     private bool _isNeedToEnableCurveMode;
+    private bool _isNeedToEnableRetroMode;
 
     private bool _isNeedToTurn;
 
+    private Vector3 _lastBuildingEndPosition;
     private Vector3 _lastBuildingPosition;
 
     private float _totalVehicleWidth;
@@ -70,7 +76,7 @@ public class Builder : SingleBehaviour<Builder>
     private RoadLine _endLine = RoadLine.Venus;
 
     private Building _lastBuilding;
-    private bool IsCanPlaceEr => _isNeedToEnableCurveMode == false && _isNeedToEnableMetroMode == false && _isNeedToEnableTilerMode == false;
+    public bool IsCanPlaceEr => _isNeedToEnableCurveMode == false && _isNeedToEnableMetroMode == false && _isNeedToEnableTilerMode == false && _isNeedToEnableRetroMode == false;
 
     private List<Building> _buildingAfterHulkPickup;
     private bool _isNeedToRecordBuildings = false;
@@ -79,20 +85,24 @@ public class Builder : SingleBehaviour<Builder>
     public void Rotate(bool isLeft)
     {
         _rotation.eulerAngles += new Vector3(0, isLeft? -90 : 90, 0);
+
+        Game.OnTurn();
     }
 
 
-    public void CreateBuildingFrom(Vector3 position)
+    public void CreateBuildingFrom(Vector3 position, Quaternion rotation)
     {
         Portal.Reset();
+
+        position.y = 0;
+
+        _rotation = rotation;
 
         _height = 0;
         _nextHeight = 0;
         _nextBuildingIsVehicle = false;
 
-        CreateNewBuilding(_startBuilding, false, position + _rotation * Vector3.forward * 5);
-
-        //Debug.Log("Hello world : " + position);
+        CreateNewBuilding(_startBuilding, true, position);
 
         _trigger.MoveTo(position + _rotation * Vector3.forward * 5);
 
@@ -100,16 +110,14 @@ public class Builder : SingleBehaviour<Builder>
     }
 
 
-    private void Start()
+    public void Initialize()
     {
         _player = Player.Movement.transform;
 
         _currentBuilding = _startBuilding;
         _nextBuildingIsVehicle = false;
 
-        CreateNewBuilding(_startBuilding, true);
-
-        _isNeedToEnableMetroMode = true;
+        CreateNewBuilding(_realStartBuilding, isStartBuilding: true);
 
         Regenerate(false);
 
@@ -119,12 +127,18 @@ public class Builder : SingleBehaviour<Builder>
 
     protected override void OnActive()
     {
+        if (Game.InMiniGames) return;
+
+        if( Metroer.IsEnabled == false && Curver.IsEnabled == false && Tiler.IsEnabled == false && Retroer.IsEnabled == false)
+
         _trigger.Triggered += Regenerate;
     }
 
 
     protected override void OnDisactive()
     {
+        if (Game.InMiniGames) return;
+
         _trigger.Triggered -= Regenerate;
     }
 
@@ -136,7 +150,7 @@ public class Builder : SingleBehaviour<Builder>
         if (isActiveAndEnabled == false) return;
 
         Vector3 currentPlayerPosition = Player.Movement.transform.position;
-        Vector3 lastBuildingPosition = _lastBuilding.transform.position;
+        Vector3 lastBuildingPosition = _lastBuildingPosition;    // Object null bag
 
         while ( Vector3.Distance(currentPlayerPosition, lastBuildingPosition) < _distanceForDecoBuildings)
         {
@@ -188,36 +202,35 @@ public class Builder : SingleBehaviour<Builder>
             }
 
             lastBuildingPosition = _lastBuilding.transform.position;
-
+        
             if (IsCanPlaceTurn())
             {
                 EnableTurn();
                 DisableTurn();
             }
-            else if (IsCanPlaceMetro())
+            if (IsCanPlaceMetro())
             {
                 EnableMetroGeneration();
-             
-                break;
             }
-            else if( IsCanPlaceTiler() )
+            if (IsCanPlaceTiler())
             {
                 EnableTilerGeneration();
-
-                break;
             }
-            else if( IsCanPlaceCurve() )
+            if (IsCanPlaceCurve())
             {
                 EnableCurveGeneration();
-
-                break;
             }
-            else if( IsCanPlaceBridge() )
+            if (IsCanPlaceRetro())
+            {
+                EnableRetroMode();
+            }
+            if (IsCanPlaceBridge())
             {
                 EnableBridge();
                 DisableBridge();
             }
         }
+
 
         _trigger.MoveTo( Player.Movement.transform.position + Player.Movement.transform.rotation * (Vector3.forward * 3));
     }
@@ -228,24 +241,21 @@ public class Builder : SingleBehaviour<Builder>
         Building building = Instantiate( origin );
 
 
-        if (isStartBuilding == false)
+        if (isStartBuilding == false || from != default)
         {
             building.transform.localRotation = _rotation;
 
             if (origin == _vehicle || origin == _train)
-                building.transform.localPosition = (from == default? new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) : from) + (_rotation * Vector3.forward * ((_vehiclePropastWidth + 1) * Game.Difficulty - 1)) + Vector3.up * _height * 1f;
+                building.transform.position = (from == default? new Vector3(_lastBuildingEndPosition.x, 0, _lastBuildingEndPosition.z) : from) + (_rotation * Vector3.forward * ((_vehiclePropastWidth + 1) * Game.Difficulty - 1)) + Vector3.up * _height * 1f;
             else
-                building.transform.localPosition = (from == default ? new Vector3(_lastBuilding.EndPoint.position.x, 0, _lastBuilding.EndPoint.position.z) : from) + (_rotation * Vector3.forward * ((_currentBuilding.IsNearly || _pastBuilding.IsNearly) ? 0 : (((_buildingWidth + 1 + building.PlaceOffset) * Game.Difficulty) - 1))) + Vector3.up * _height * 1f;
+                building.transform.position = (from == default ? new Vector3(_lastBuildingEndPosition.x, 0, _lastBuildingEndPosition.z) : from) + (_rotation * Vector3.forward * ((_currentBuilding.IsNearly || _pastBuilding.IsNearly) ? 0 : (((_buildingWidth + 1 + building.PlaceOffset) * Game.Difficulty) - 1))) + Vector3.up * _height * 1f;
         }
         else
         {
-            building.transform.localPosition = _startPoint.localPosition;
+            building.transform.position = _startPoint.position;
         }
 
-        if (isStartBuilding == false && origin != _vehicle)
-        {
-            _endLine = _obstacler.Generate(building, _endLine, (_height < _nextHeight && _nextBuildingIsVehicle == false) || isNeedToRise, origin == _bridge);
-        }
+        _lastBuildingPosition = building.transform.position;
 
         if (isStartBuilding == false)
         {
@@ -285,16 +295,37 @@ public class Builder : SingleBehaviour<Builder>
                 _buildingAfterHulkPickup.Add( building );
         }
 
-        CreateLoseTrigger(_lastBuildingPosition, building.transform.position, building.transform);
+        CreateLoseTrigger(_lastBuildingEndPosition, building.transform.position, building.transform);
 
         _lastBuilding = building;
-        _lastBuildingPosition = building.EndPoint.position;
+        _lastBuildingEndPosition = building.EndPoint.position;
+
+        if (isStartBuilding == false && origin != _vehicle && origin != _train && origin != _upper)
+        {
+            _endLine = _obstacler.Generate(building, _endLine, origin == _bridge);
+
+            if (((_height < _nextHeight && _nextBuildingIsVehicle == false) || isNeedToRise) && origin != _upper && Portal.IsWaitingForSecondPortal == false)
+            {
+                Building upper = Instantiate(_upper);
+
+                upper.transform.position = new Vector3(building.EndPoint.position.x, _height, building.EndPoint.position.z) + _rotation * Vector3.right * (int)_endLine * 0.746f;
+                upper.transform.rotation = _rotation;
+
+                _lastBuilding = upper;
+                _currentBuilding = upper;
+                _lastBuildingEndPosition = upper.EndPoint.position + _rotation * Vector3.left * (int)_endLine * 0.746f;
+
+                Vector3 endPointLocalPosition = upper.transform.GetChild(1).localPosition;
+                endPointLocalPosition.x = (int)_endLine * -0.746f;
+                upper.transform.GetChild(1).localPosition = endPointLocalPosition;
+            }
+        }
 
         return building;
     }
 
 
-    private void CreateLoseTrigger(Vector3 startPosition, Vector3 endPosition, Transform parent)
+    public void CreateLoseTrigger(Vector3 startPosition, Vector3 endPosition, Transform parent)
     {
         Vector3 losePosition = (startPosition + endPosition) / 2;
         Vector3 loseSize = new Vector3(3, 3, Vector3.Distance(startPosition, endPosition));
@@ -320,11 +351,29 @@ public class Builder : SingleBehaviour<Builder>
     }
 
 
-    public void DestroyAllBuilding()
+    public void DestroyAllTrash(bool includeBuildings)
     {
-        foreach(Building building in FindObjectsOfType<Building>(true))
+        List<Component> components = new List<Component>(50);
+
+        components.AddRange(FindObjectsOfType<Tile>(true));
+        components.AddRange(FindObjectsOfType<Trashable>(true).Where( t => t.PhaseOnCreate < Game.Phase ));
+        components.AddRange(FindObjectsOfType<RegeneratePoint>(true));
+
+        if (includeBuildings)
         {
-            Destroy( building.gameObject );
+            components.AddRange(FindObjectsOfType<Milk>(true));
+            components.AddRange(FindObjectsOfType<Building>(true));
+            components.AddRange(FindObjectsOfType<Trashable>(true));
+            components.AddRange(FindObjectsOfType<DecorationBuilding>(true));
+        }
+        else
+        {
+            components.AddRange(FindObjectsOfType<Trashable>(true).Where(t => t.PhaseOnCreate < Game.Phase));
+        }
+
+        foreach (Component component in components)
+        {
+            Destroy(component.gameObject);
         }
     }
 
@@ -412,7 +461,7 @@ public class Builder : SingleBehaviour<Builder>
     }
 
 
-    private void EnableMetroGeneration()
+    public void EnableMetroGeneration()
     {
         _trigger.Triggered -= Regenerate;
 
@@ -433,11 +482,14 @@ public class Builder : SingleBehaviour<Builder>
     {
         _trigger.Triggered += Regenerate;
 
+        _isNeedToEnableMetroMode = false;
+
+        if (from == default)
+            return;
+
         _endLine = RoadLine.Venus;
         _height = 0;
         _nextHeight = 0;
-
-        _isNeedToEnableMetroMode = false;
 
         CreateNewBuilding( _vehicle, false, from );
         CreateNewBuilding(_startBuilding, false);
@@ -468,11 +520,14 @@ public class Builder : SingleBehaviour<Builder>
     {
         _trigger.Triggered += Regenerate;
 
+        _isNeedToEnableCurveMode = false;
+
+        if (from == default)
+            return;
+
         _endLine = RoadLine.Venus;
         _height = 0;
         _nextHeight = 0;
-
-        _isNeedToEnableCurveMode = false;
 
         CreateNewBuilding(_startBuilding, false, from);
 
@@ -536,7 +591,7 @@ public class Builder : SingleBehaviour<Builder>
 
     public bool IsCanPlaceBridge()
     {
-        return (Portal.IsWaitingForSecondPortal == false && _currentBuilding == _startBuilding && _height < 1 && _nextHeight == _height );
+        return (Portal.IsWaitingForSecondPortal == false && _currentBuilding == _startBuilding && _height < 1 && _nextHeight == _height && IsCanPlaceEr == true);
     }
 
 
@@ -559,6 +614,39 @@ public class Builder : SingleBehaviour<Builder>
     }
 
 
+    public void EnableRetroMode()
+    {
+        _trigger.Triggered -= Regenerate;
+
+        _height = 0;
+        _nextHeight = 0;
+
+        _retrowaver.Spawn(DisableRetroMode, _endLine, _lastBuilding.EndPoint.position + (_rotation * Vector3.forward * (((_buildingWidth - 1) * Game.Difficulty) + 1)), _rotation);
+    }
+
+    public void DisableRetroMode(Vector3 from, RoadLine line)
+    {
+        _trigger.Triggered += Regenerate;
+
+        _endLine = line;
+        _height = 0;
+        _nextHeight = 0;
+
+        _decoEndPoint = 0;
+
+        _isNeedToEnableRetroMode = false;
+
+        CreateNewBuilding(_startBuilding, false, from);
+
+    }
+
+    public bool IsCanPlaceRetro()
+    {
+        return (Game.Mode.InxAxIxRxMode == false && Rocket.IsAlreadyExist == false && _isNeedToEnableRetroMode && _height == 0 && _nextHeight == 0 && Portal.IsWaitingForSecondPortal == false);
+    }
+
+
+
     public void PrepareHulkGeneration()
     {
         _buildingAfterHulkPickup = new List<Building>(10);
@@ -567,23 +655,27 @@ public class Builder : SingleBehaviour<Builder>
     }
 
 
+
     private void StartNextEr()
     {
         switch( _nextErIndex )
         {
             case 0:
-                _isNeedToEnableTilerMode = true;
-                break;
-            case 1:
                 _isNeedToEnableCurveMode = true;
                 break;
-            case 2:
+            case 1:
                 _isNeedToEnableMetroMode = true;
+                break;
+            case 2:
+                _isNeedToEnableTilerMode = true;
+                break;
+            case 3:
+                _isNeedToEnableRetroMode = true;
                 break;
             default: throw new Exception("Ќеверный индекс допольнительного режима");
         }
 
-        _nextErIndex = _nextErIndex == 2 ? 0 : (_nextErIndex + 1);
+        _nextErIndex = _nextErIndex == 3 ? 0 : (_nextErIndex + 1);
     }
 
 
@@ -608,7 +700,7 @@ public class Builder : SingleBehaviour<Builder>
 
 
 
-    // Er loop (€ хреновый архитектор кода, иди в жопу!)
+    // Er loop (€ хреновый архитектор кода, идите в жопу!)
 
 
 
@@ -617,26 +709,29 @@ public class Builder : SingleBehaviour<Builder>
 
     private IEnumerator ErLoop()
     {
+        yield return new WaitUntil(() => IsCanPlaceEr == true);
         yield return new WaitForSeconds(5);
 
-        _nextErIndex = Random.Range(0, 3);
+        _nextErIndex = 3; // Random.Range(0, 4);
 
         while (isActiveAndEnabled)
         {
-            _isNeedToTurn = true;
-
-            yield return new WaitUntil(() => _isNeedToTurn == false);
-            yield return StartCoroutine(WaitTimer(10));
-
-            //StartNextEr();
-            _isNeedToEnableMetroMode = true;
+            StartNextEr();
 
             yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return new WaitUntil(() => Drone.Instance.IsEnabled == false);
             yield return StartCoroutine(WaitTimer(10));
 
             StartNextEr();
 
             yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return new WaitUntil(() => Drone.Instance.IsEnabled == false);
+            yield return StartCoroutine(WaitTimer(10));
+        
+            _isNeedToTurn = true;
+
+            yield return new WaitUntil(() => _isNeedToTurn == false);
+            yield return new WaitUntil(() => Drone.Instance.IsEnabled == false);
             yield return StartCoroutine(WaitTimer(10));
         }
     }

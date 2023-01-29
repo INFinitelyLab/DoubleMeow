@@ -54,9 +54,6 @@ public sealed class Inputer : SingleBehaviour<Inputer>
             }
         }
 
-        //Debug
-        if (Input.GetKeyDown(KeyCode.R)) Game.Restart();
-
         if (Input.GetKeyDown(KeyCode.T)) Application.targetFrameRate = Application.targetFrameRate == 20 ? 120 : 20;
     }
 

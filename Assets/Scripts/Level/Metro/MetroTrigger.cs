@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MetroTrigger : MonoBehaviour
+public class MetroTrigger : Trashable
 {
     [SerializeField] private bool _isNeedToEnableMetroMode;
 
@@ -15,10 +15,6 @@ public class MetroTrigger : MonoBehaviour
                     Player.Camera.EnableMetroMode();
 
                     Invoke(nameof(EnableMetroMode), 0.3f);
-                }
-                else
-                {
-                    Player.Presenter.EnableCurvatization();
                 }
             }
             else

@@ -13,6 +13,7 @@ public class Debuger : SingleBehaviour<Debuger>
     public GameObject _generation;
 
     public GameObject losePanel;
+    public GameObject losePanelMiniGame;
 
     public float updateInterval = 0.5F;
     private double lastInterval;
@@ -25,21 +26,12 @@ public class Debuger : SingleBehaviour<Debuger>
     public UniversalRenderPipelineAsset _asset;
 
 
-    public void OnGameEnd()
-    {
-        Invoke("_OnGameEnd", 1);
-    }
-
-    private void _OnGameEnd()
-    {
-        losePanel.SetActive(true);
-    }
-
 
     public void OnRescale(float factor)
     {
         _asset.renderScale = factor;
     }
+
 
     [ContextMenu("Reselect Skin")]
     public void SelectSkin()
@@ -115,6 +107,16 @@ public class Debuger : SingleBehaviour<Debuger>
             frames = 0;
             lastInterval = timeNow;
         }
+    }
+
+
+    public void ResetMilks()
+    {
+        PlayerPrefs.DeleteAll();
+
+        Stats.Load();
+
+        Stats.Save();
     }
 
 

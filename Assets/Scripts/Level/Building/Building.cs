@@ -105,7 +105,7 @@ public class Building : MonoBehaviour, IGroundeable
 
         while( point < endPoint )
         {
-            float distance = type == 1 || type == 3? endPoint - point : 999;
+            float distance = endPoint - point;
 
 
             DecorationBuilding origin = _prefabs.Where(p => p.Width < distance).ToList().Random();
@@ -149,7 +149,7 @@ public class Building : MonoBehaviour, IGroundeable
 
     public static float PlaceDecorationsForTurn(float height, float startPoint, Turner turner, Vector3 position, Quaternion rotation, List<DecorationBuilding> _prefabs, DecorationBuilding _turnPrefab, bool isLeft)
     {
-        Vector3 insidePoint = turner.Offset.position + rotation * new Vector3(isLeft? -1 : 1, 0, -1);
+        Vector3 insidePoint = turner.Offset.position + rotation * new Vector3(isLeft? 2 : -3, 0, 1);
 
         startPoint = startPoint > DecorationBulidingDistance ? startPoint - DecorationBulidingDistance : 0;
         insidePoint.y = 0;
@@ -157,13 +157,15 @@ public class Building : MonoBehaviour, IGroundeable
 
         //=== Inside building's ===//
 
-        Instantiate( _turnPrefab, insidePoint + Vector3.up * (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), Quaternion.Euler(0, rotation.eulerAngles.y + (turner.Direction == Direction.Left ? 0 : -90), 0) ); // Main building
+        DecorationBuilding box = Instantiate( _turnPrefab, insidePoint + Vector3.up * (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), turner.transform.rotation); // Main building
+
+        box.transform.localScale = new Vector3( isLeft ? 1 : -1, 1 , 1 );
 
         DecorationBuilding originBetween = _prefabs.Where(p => p.Width > 4).ToList().Random();
         DecorationBuilding originBefore = _prefabs.Where(p => p.Width < (3 - startPoint)).ToList().Random();
         DecorationBuilding originAfter = _prefabs.Where(p => p.Width < 4).ToList().Random();
 
-        if (originBetween != null)
+        /*if (originBetween != null)
         {
             DecorationBuilding between = Instantiate(originBetween, position + rotation * new Vector3(isLeft? -2.16f : 2.16f, 3.73f, 22.17f), Quaternion.Euler(0, rotation.eulerAngles.y - 90, 0));
             between.transform.localScale = new Vector3(-1, 1, isLeft ? 1 : -1);
@@ -173,7 +175,7 @@ public class Building : MonoBehaviour, IGroundeable
         {
             DecorationBuilding after = Instantiate(originAfter, insidePoint - (rotation) * new Vector3((isLeft ? 5.5f : -5.5f), -(height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), 1), Quaternion.Euler(0, rotation.eulerAngles.y + (turner.Direction == Direction.Left ? -90 : 90), 0));
             after.transform.localScale = new Vector3(isLeft ? 1 : -1, 1, 1);
-        }
+        }*/
         if (originBefore != null)
         {
             DecorationBuilding before = Instantiate(originBefore, insidePoint - (rotation) * new Vector3(isLeft ? 1 : -1, -(height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), 7.5f), Quaternion.Euler(0, rotation.eulerAngles.y, 0)); // Before main building
@@ -210,7 +212,7 @@ public class Building : MonoBehaviour, IGroundeable
         origin = _prefabs.Where(p => p.Width < 13 - currentPoint).ToList().Random();
         offset = new Vector3( (currentPoint) * (isLeft? -1 : 1), (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), DecorationBuildingDistanceToBuilding + 16 );
 
-        while( origin != null )
+        /*while( origin != null )
         {
             building = Instantiate(origin, position + rotation * offset, Quaternion.Euler(rotation.eulerAngles.x, rotation.eulerAngles.y + (isLeft ? -90 : 90), rotation.eulerAngles.z));
             building.transform.localScale = new Vector3(isLeft ? -1 : 1, 1, 1);
@@ -219,7 +221,7 @@ public class Building : MonoBehaviour, IGroundeable
             offset.x = (currentPoint) * (isLeft? -1 : 1);
 
             origin = _prefabs.Where(p => p.Width < 13 - currentPoint).ToList().Random();
-        }
+        }*/
 
         return 0;
     }

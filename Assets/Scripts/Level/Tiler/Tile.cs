@@ -19,6 +19,14 @@ public class Tile : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    public void Endplace()
+    {
+        _body.position = _targetPosition;
+        _body.rotation = Quaternion.identity;
+
+        _milk.position = _targetPosition;
+    }
+
 
     private void Update()
     {

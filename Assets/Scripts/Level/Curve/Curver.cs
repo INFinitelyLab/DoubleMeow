@@ -16,7 +16,7 @@ public class Curver : MonoBehaviour
 
     private Quaternion _rotation;
     private Transform _player;
-    private RoadLine _line;
+    private int _line;
 
     private List<Curve> _pool;
 
@@ -26,6 +26,8 @@ public class Curver : MonoBehaviour
     private float _decoEndPoint;
 
     public System.Action<Vector3> EndGenerate;
+
+    public bool IsEnabled { get; private set; }
 
 
     public void Spawn(System.Action<Vector3> OnEndMethod, float decoEndPoint, bool isPreviousVehicle, Vector3 position, Quaternion rotation)
@@ -40,7 +42,7 @@ public class Curver : MonoBehaviour
 
         _rotation = rotation;
 
-        _line = RoadLine.Venus;
+        _line = 0;
 
         EndGenerate = OnEndMethod;
         _decoEndPoint = decoEndPoint;
@@ -53,6 +55,21 @@ public class Curver : MonoBehaviour
         _decoEndPoint = Building.PlaceDecorations(0, _decoEndPoint, position, rotation, _startBuilding.EndPoint.transform.localPosition.z, _decoPrefabs, isPreviousVehicle? 2 : 1);
 
         _distance += _startBuilding.EndPoint.transform.localPosition.z;
+
+        IsEnabled = true;
+
+        CreateRegeneratePoint();
+    }
+
+
+    public void CreateRegeneratePoint()
+    {
+        Vector3 position = Player.Movement.TurnPositionWithoutRotation;
+
+        GameObject regenerationPoint = new GameObject();
+
+        regenerationPoint.transform.position = position;
+        regenerationPoint.AddComponent<RegeneratePoint>();
     }
 
 
@@ -84,7 +101,7 @@ public class Curver : MonoBehaviour
         }
 
 
-        _regenTrigger.MoveTo( Player.Movement.transform.localPosition + _rotation * Vector3.forward * (2 * Game.Difficulty));
+        _regenTrigger.MoveTo( Player.Movement.transform.position + _rotation * Vector3.forward * (2 * Game.Difficulty));
 
         if (_distance >= _targetMetroDistance)
         {
@@ -95,6 +112,18 @@ public class Curver : MonoBehaviour
             _regenTrigger.Triggered -= Regenerate;
 
             EndGenerate?.Invoke((_rotation * (Vector3.forward * _distance)) + _startPosition);
+
+            IsEnabled = false;
         }
+    }
+
+
+    public void Disable()
+    {
+        IsEnabled = false;
+
+        _regenTrigger.Triggered -= Regenerate;
+
+        EndGenerate?.Invoke(default);
     }
 }

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 // Static
@@ -101,11 +100,11 @@ public static class Extentions
     {
         int value = 0;
 
-        Vector2Int[] chances = new Vector2Int[ chanceables.Length ];
+        Vector2Int[] chances = new Vector2Int[chanceables.Length];
 
-        for( int index = 0; index < chanceables.Length; index++ )
+        for (int index = 0; index < chanceables.Length; index++)
         {
-            chances[index] = new Vector2Int( value, chanceables[index].chance );
+            chances[index] = new Vector2Int(value, chanceables[index].chance + value);
 
             value += chanceables[index].chance;
         }
@@ -207,6 +206,16 @@ public interface ILowereable
 public interface IGroundeable
 {
 
+}
+
+public class Trashable : MonoBehaviour
+{
+    public int PhaseOnCreate { get; private set; }
+
+    private void Awake()
+    {
+        PhaseOnCreate = Game.Phase;
+    }
 }
 
 

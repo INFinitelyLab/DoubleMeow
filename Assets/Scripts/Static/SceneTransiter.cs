@@ -3,9 +3,9 @@ using UnityEngine.SceneManagement;
 
 public static class SceneTransiter
 {
-    private static Scene _sceneToTransite;
+    private static SceneType _sceneToTransite;
 
-    public static void TransiteTo( Scene scene )
+    public static void TransiteTo( SceneType scene )
     {
         TransiteAnimator.Fade(ChangeScene);
 
@@ -17,11 +17,11 @@ public static class SceneTransiter
     {
         switch(_sceneToTransite)
         {
-            case Scene.Game:
+            case SceneType.Game:
                 SceneManager.LoadScene(1);
                 break;
 
-            case Scene.Menu:
+            case SceneType.Menu:
                 SceneManager.LoadScene(0);
                 break;
         }
@@ -29,7 +29,7 @@ public static class SceneTransiter
 }
 
 
-public enum Scene
+public enum SceneType
 {
     Game,
     Menu

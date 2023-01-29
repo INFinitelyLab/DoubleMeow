@@ -54,11 +54,11 @@ public static class Stats
     public static bool TryDecreaseCoin(int value)
     {
         if (value < 1)
-            throw new System.Exception("Ќельз€ увеличить число монеток через метод уменьшени€");
+            throw new Exception("Ќельз€ увеличить число монеток через метод уменьшени€");
 
         if (Coins >= value)
         {
-            Coins.Increase( -value );
+            Coins.Decrease( value );
 
             CoinsCountChanged?.Invoke(Coins);
 
@@ -83,8 +83,6 @@ public static class Stats
         _levelCoins = new SecureInt(0, "LevelCoins");
 
         LevelUped?.Invoke(Level);
-
-        //Debug.Log("”ровень повышен! " + (int)Level);
     }
 
     public static void OnDeath()
@@ -108,27 +106,11 @@ public static class Stats
 
     public static void Save()
     {
-        PlayerPrefsExtentions.SetSecure( CoinsSaveKey, Coins);
-        PlayerPrefsExtentions.SetSecure( LevelSaveKey, Level);
-        PlayerPrefsExtentions.SetSecure( LevelCoinsSaveKey, _levelCoins);
-
-        PlayerPrefs.SetInt("Death", DeathCount);
-        PlayerPrefs.SetInt("TargetFPS", TargetFPS);
-        PlayerPrefs.SetInt("TargetGraphic", (int)TargetGraphics);
-
-        PlayerPrefs.SetString("SelectedSkin", selectedSkin);
+        
     }
 
     public static void Load()
     {
-        Coins = PlayerPrefsExtentions.GetSecure( CoinsSaveKey, "Coins" );
-        Level = PlayerPrefsExtentions.GetSecure( LevelSaveKey, "Level" );
-        _levelCoins = PlayerPrefsExtentions.GetSecure( LevelCoinsSaveKey, "LevelCoins" );
-
-        DeathCount = PlayerPrefs.GetInt("Death");
-        TargetFPS = PlayerPrefs.GetInt("TargetFPS");
-        TargetGraphics = (GraphicPreset)PlayerPrefs.GetInt("TargetGraphic");
-
-        selectedSkin = PlayerPrefs.GetString("SelectedSkin");
+        
     }
 }

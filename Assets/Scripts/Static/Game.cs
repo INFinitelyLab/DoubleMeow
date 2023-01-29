@@ -8,36 +8,38 @@ public sealed class Game : SingleBehaviour<Game>
     [SerializeField] private GameObject _postProcessInstance;
 
     public static float levelHeight => Instance._levelHeight;
-    public static float Difficulty { get; private set; } = 1;
+    public static float Difficulty => Mathf.Max(_difficulty, _acceleratedDifficulty);
     public static float PassedTime { get; private set; } = 0;
 
+    public static bool InMiniGames => MiniGames.IsActive || MiniGames.IsReadyToActive;
     public static bool IsActive { get; private set; }
     public static int Phase { get; private set; }
 
-    private static Coroutine _acceleration;
+    public static int MilkCollected { get; private set; }
+    public static Action<int> MilkChanged;
+    public static Action Started;
 
-    private const float SpeedUpTime = 10; // In Minutes
+    private static Coroutine _acceleration;
+    private static bool isNeedToLaunch;
+
+    private const float SpeedUpTime = 5; // In Minutes
+    private const float SpeedUpInMiniGamesTime = 2;
+
+    private static float _difficulty;
+    private static float _acceleratedDifficulty;
+
+    private bool isRestarted;
 
     // Инициализация
 
     protected override void OnActive()
     {
-        Stats.Load();
-
-        Portal.Reset();
-
         Instance._postProcessInstance.SetActive( Stats.TargetGraphics == GraphicPreset.High );
-
-        Achievements.Initialize();
-        Skin.Initialize();
-
-        if (IsActive == true) Stop();
-        if (IsActive == false) Launch();
     }
 
     protected override void OnDisactive()
     {
-        if (IsActive) Stop();
+        // Хеллоу, ворлд!
     }
 
     // Управление
@@ -51,7 +53,6 @@ public sealed class Game : SingleBehaviour<Game>
         if (direction == Direction.Down) Player.Movement.Land();
     }
 
-
     private void OnDraged(float horizontal, float vertical)
     {
         Player.Movement.Drag(horizontal, vertical);
@@ -60,60 +61,81 @@ public sealed class Game : SingleBehaviour<Game>
 
     // Цикл игры
 
+    public static void OnMilkCollected()
+    {
+        if (Game.IsActive == false) return;
+
+        MilkCollected++;
+        MilkChanged?.Invoke( MilkCollected );
+    }
+
+    public static void OnTurn()
+    {
+        Phase++;
+    }
+
     public static void Launch()
     {
         if (IsActive == true) throw new Exception("Нельзя запустить игру, игра уже запущена");
 
         IsActive = true;
 
-        Difficulty = 0.8f;
+        _acceleratedDifficulty = 0;
+        _difficulty = 0.8f;
         Phase = 0;
         PassedTime = 0;
+        MilkCollected = 0;
 
         Inputer.Swiped += Instance.OnSwiped;
         Inputer.Draged += Instance.OnDraged;
 
-        Mode.DisableAllModes();
-
-        Stats.Load();
         CameraSyncer.Reset();
-
-        _acceleration = Instance.StartCoroutine( SpeedUp() );
 
         Player.Movement.enabled = true;
         Player.Camera.enabled = true;
+
+        Started?.Invoke();
+
+        if (MainMenu.IsOpened) MainMenu.Close();
+
+        if (InMiniGames == false)
+        {
+            Mode.DisableAllModes();
+            Builder.Instance.Initialize();
+            
+            _acceleration = Instance.StartCoroutine( SpeedUp() );
+        }
+        else
+        {
+            _acceleration = Instance.StartCoroutine( SpeedUpInMiniGames() );
+        }
     }
 
     public static void Stop(bool isNeedToDisactiveCamera = false)
     {
         if (IsActive == false) throw new Exception("Нельзя остановить игру, игра уже остановлена");
 
-        Inputer.Swiped -= Instance.OnSwiped;
-        Inputer.Draged -= Instance.OnDraged;
+        Inputer.Swiped = null;
+        Inputer.Draged = null;
 
         IsActive = false;
 
-        Stats.Save();
         Stats.OnUnperfectJump();
 
-        Instance.StopCoroutine( _acceleration );
+        if (IsExist && _acceleration != null) Instance.StopCoroutine( _acceleration );
 
-        //if (isNeedToDisactiveCamera)
-        //Player.Camera.enabled = false;
+        if (GameUI.IsExist) GameUI.OpenDronePanel();
 
-        Debuger.Instance.OnGameEnd();
-    }
-
-    public static void Restart()
-    {
-        if(IsActive) Stop();
-
-        SceneTransiter.TransiteTo(Scene.Game);
+        if (Player.IsExist) Player.Camera.DisableTilerMode();
     }
 
     public static void Menu()
     {
-        SceneTransiter.TransiteTo( Scene.Menu );
+        if (Game.IsActive)
+            Game.Stop();
+
+        MainMenu.Launch();
+        MainMenu.ResetScene();
     }
 
     public static void Regenerate()
@@ -126,7 +148,6 @@ public sealed class Game : SingleBehaviour<Game>
         Inputer.Swiped += Instance.OnSwiped;
         Inputer.Draged += Instance.OnDraged;
 
-        Stats.Load();
         CameraSyncer.Reset();
 
         _acceleration = Instance.StartCoroutine(SpeedUp());
@@ -137,27 +158,38 @@ public sealed class Game : SingleBehaviour<Game>
         Drone.Instance.Enable();
     }
 
+    public static void Accelerate()
+    {
+        _acceleratedDifficulty = 1.5f;
+    }
+
     public void Update()
     {
-        PassedTime += Time.deltaTime;
+        if (IsActive) PassedTime += Time.deltaTime;
+
+        if (Player.Movement.enabled) Player.Movement.GameUpdate();
+        
+        xAxIxRxer.GameUpdate();
     }
 
     private static IEnumerator SpeedUp()
     {
-        while(Phase == 0)
+        while (Game.IsActive)
         {
             yield return new WaitForSeconds(10);
 
-            Difficulty = Mathf.MoveTowards( Difficulty, 1.6f, 10 / (SpeedUpTime * 60) );
-
-            if (Difficulty >= 1.4f) Phase = 1;
+            _difficulty = Mathf.MoveTowards(Difficulty, 1.1f, 10 / (SpeedUpTime * 60) / (1.1f / 0.8f));
         }
+    }
 
-        while (Phase == 1)
+
+    private static IEnumerator SpeedUpInMiniGames()
+    {
+        while (Game.IsActive)
         {
             yield return new WaitForSeconds(10);
 
-            Difficulty = Mathf.MoveTowards(Difficulty, 3.2f, 10 / (SpeedUpTime * 60) / 2);
+            _difficulty = Mathf.MoveTowards(Difficulty, 1.6f, 10 / (SpeedUpInMiniGamesTime * 60) / (1.1f / 0.8f));
         }
     }
 
@@ -175,13 +207,12 @@ public sealed class Game : SingleBehaviour<Game>
 
             InVehicleMode = true;
 
+            if (Player.IsExist == false) return;
+
             DisableParachuteMode();
 
             Player.Movement.EnableVehicleControl();
             Player.Presenter.EnableVehicleMode();
-
-            Builder.Instance.DeleteAllRegeneratePoints();
-            Builder.Instance.Metroer.CreateRegeneratePoint();
 
             DisableHulkMode();
         }
@@ -191,6 +222,8 @@ public sealed class Game : SingleBehaviour<Game>
             if (InVehicleMode == false) return;
 
             InVehicleMode = false;
+
+            if (Player.IsExist == false) return;
 
             Player.Movement.DisableVehicleControl();
             Player.Presenter.DisableVehicleMode();
@@ -207,9 +240,14 @@ public sealed class Game : SingleBehaviour<Game>
 
             InCurveMode = true;
 
-            Player.Movement.EnableCurveControl();
+            if (Player.IsExist == false) return;
 
+            DisableParachuteMode();
             DisableHulkMode();
+
+            Player.Movement.EnableCurveControl();
+            Player.Camera.SetHeight(0);
+
         }
 
         public static void DisableCurveMode()
@@ -218,9 +256,10 @@ public sealed class Game : SingleBehaviour<Game>
 
             InCurveMode = false;
 
-            DisableParachuteMode();
+            if (Player.IsExist == false) return;
 
             Player.Movement.DisableCurveControl();
+            Player.Camera.SetHeight(0);
         }
 
 
@@ -234,7 +273,7 @@ public sealed class Game : SingleBehaviour<Game>
 
             InDoubleMode = true;
 
-            _doubleModeCoroutine = Instance.StartCoroutine( InvokeDelay(30, DisableDoubleMode) );
+            _doubleModeCoroutine = Instance.StartCoroutine( InvokeDelay( Double.UseTime , DisableDoubleMode) );
         }
 
         public static void DisableDoubleMode()
@@ -263,7 +302,7 @@ public sealed class Game : SingleBehaviour<Game>
 
             DisableParachuteMode();
 
-            _magnetModeCoroutine = Instance.StartCoroutine( InvokeDelay(30, DisableMagnetMode) );
+            _magnetModeCoroutine = Instance.StartCoroutine( InvokeDelay( Magnet.UseTime , DisableMagnetMode) );
         }
 
         public static void DisableMagnetMode()

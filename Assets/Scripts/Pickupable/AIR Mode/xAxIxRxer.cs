@@ -5,7 +5,6 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
 {
     [SerializeField] private xAxIxRxTrigger _trigger;
     [SerializeField] private Animator _animator;
-    [SerializeField] private float _targetDistance = 50;
     [SerializeField] private Milk _milk;
 
     private static Transform _player;
@@ -17,6 +16,17 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
     private static float _intensity;
 
     private Vector3 _generatePosition;
+
+    public float Height { get; private set; }
+
+    public static bool isAnimate { get; private set; }
+
+
+    public static void GameUpdate()
+    {
+        if (isAnimate)
+            Player.Camera.LatexAxIxRxUpdate();
+    }
 
 
     public static void Enable()
@@ -36,10 +46,6 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
 
         _player = Player.Movement.transform;
         _camera = Player.Camera.transform;
-
-        Instance.transform.localScale = new Vector3(1, (7 - Player.Movement.transform.position.y) / 7, 1); ;
-        _playerParent.localScale = new Vector3(1, 7 / (7 - Player.Movement.transform.position.y), 1);
-        _cameraParent.localScale = new Vector3(1, 7 / (7 - Player.Movement.transform.position.y), 1);
 
         _player.SetParent(_playerParent);
         _camera.SetParent(_cameraParent);
@@ -67,31 +73,26 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
     }
 
 
-    private void Update()
-    {
-        if (Game.Mode.InxAxIxRxMode)
-        {
-            Vector3 position = _camera.localPosition;
-            position.x = Mathf.Lerp( position.x, 0, Time.deltaTime );
-
-            _camera.localPosition = position;
-        }
-    }
-
 
     private IEnumerator Generate()
     {
         Quaternion rotation = Player.Movement.transform.rotation;
-        Vector3 startPosition = Player.Movement.TurnPositionWithoutRotation + (rotation * (Vector3.forward * Player.Movement.Position.z));
+        Vector3 startPosition = Player.Movement.TurnPositionWithoutRotation + (rotation * (Vector3.forward * (Player.Movement.Position.z - Player.Movement.TurnPosition.z)));
 
-        Vector3 position = Vector3.up * 7;
+        startPosition.y = 0;
+
+        Vector3 position = Vector3.up * (7 + Player.Movement.transform.position.y);
+
+        Height = position.y;
 
         bool isLeft = true;
         float distance = 10;
         float newPoint = 0;
+        float targetDistance = Rocket.TargetDistance;
+
         Vector2 point = new Vector2(Random.Range(0.8f, 0.8f), distance);
 
-        while(distance < _targetDistance)
+        while(distance < targetDistance)
         {
             if(point.y <= distance)
             {
@@ -124,6 +125,8 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
 
     private IEnumerator AnimateIn()
     {
+        isAnimate = true;
+
         _animator.SetTrigger("Play");
 
         yield return new WaitForFixedUpdate();
@@ -135,20 +138,21 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
         _player.parent = null;
         _camera.parent = null;
 
-        yield return new WaitForFixedUpdate();
-
         Player.Movement.enabled = true;
         Player.Camera.enabled = true;
+        
+        isAnimate = false;
 
         Player.Camera.EnablexAxIxRxMode();
     }
 
     private IEnumerator AnimateOut()
     {
+        isAnimate = true;
+
         _animator.SetTrigger("PlayOut");
 
         yield return new WaitForFixedUpdate();
-
 
         yield return new WaitForSeconds(0.5f);
 
@@ -156,6 +160,8 @@ public class xAxIxRxer : SingleBehaviour<xAxIxRxer>
 
         _player.parent = null;
         _camera.parent = null;
+
+        isAnimate = false;
 
         yield return new WaitForFixedUpdate();
 

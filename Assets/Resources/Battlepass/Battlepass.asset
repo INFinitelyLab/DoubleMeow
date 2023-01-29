@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07d1ab2cdb2fe7648b86cb9c05f23103, type: 3}
+  m_Name: Battlepass
+  m_EditorClassIdentifier: 
+  _items:
+  - regularItem: {fileID: 11400000, guid: 900a20d3d15d66843b799995a4e4c56d, type: 2}
+    premiumItem: {fileID: 11400000, guid: 28d46b06e9975d64bb892086571af2f3, type: 2}
+    cost: 10
+  - regularItem: {fileID: 11400000, guid: 30339116a9d12354d846c826af462e56, type: 2}
+    premiumItem: {fileID: 11400000, guid: 59b835d28256a2e4a8c424240ec7d489, type: 2}
+    cost: 15
+  - regularItem: {fileID: 11400000, guid: 623d0cd21f173154e993a086ab9e8825, type: 2}
+    premiumItem: {fileID: 11400000, guid: 5f9da5b1c94d32b4686c015202130a4b, type: 2}
+    cost: 20
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
+  - regularItem: {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+    premiumItem: {fileID: 11400000, guid: d2e0f84f89450194fbfc3b91769bfbff, type: 2}
+    cost: 25
