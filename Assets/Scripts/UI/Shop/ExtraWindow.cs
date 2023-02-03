@@ -9,6 +9,11 @@ public class ExtraWindow : ShopWindow
     [SerializeField] private ExtraPanel _heartPanel;
     [SerializeField] private ExtraPanel _acceleratorPanel;
 
+    [SerializeField] private PuzzlePanel _puzzleGrayPanel;
+    [SerializeField] private PuzzlePanel _puzzleBluePanel;
+    [SerializeField] private PuzzlePanel _puzzlePurplePanel;
+    [SerializeField] private PuzzlePanel _puzzleGoldPanel;
+
 
     private void OnEnable() => UpdateInfo();
 
@@ -19,6 +24,11 @@ public class ExtraWindow : ShopWindow
         _rocketPanel.UpdateInfo( Rocket.IsFullUpgraded == false, Rocket.Level );
         _heartPanel.UpdateInfo( true, Heart.Count );
         _acceleratorPanel.UpdateInfo( true, Accelerator.Count );
+
+        _puzzleGrayPanel.UpdateInfo( Puzzle.Gray.Count );
+        _puzzleBluePanel.UpdateInfo( Puzzle.Blue.Count );
+        _puzzlePurplePanel.UpdateInfo( Puzzle.Purple.Count );
+        _puzzleGoldPanel.UpdateInfo( Puzzle.Gold.Count );
     }
 
 
@@ -43,6 +53,19 @@ public class ExtraWindow : ShopWindow
             case ExtraType.Accelerator:
                 price = Extra.AcceleratorPrice;
                 break;
+            case ExtraType.PuzzleGray:
+                price = Extra.PuzzleGrayPrice;
+                break;
+            case ExtraType.PuzzleBlue:
+                price = Extra.PuzzleBluePrice;
+                break;
+            case ExtraType.PuzzlePurple:
+                price = Extra.PuzzlePurplePrice;
+                break;
+            case ExtraType.PuzzleGold:
+                price = Extra.PuzzleGoldPrice;
+                break;
+
         }
 
         if (Bank.TryDecreaseCoins(price))
@@ -64,11 +87,24 @@ public class ExtraWindow : ShopWindow
                 case ExtraType.Accelerator:
                     Accelerator.Pickup();
                     break;
+                case ExtraType.PuzzleGray:
+                    Puzzle.Gray.Pickup();
+                    break;
+                case ExtraType.PuzzleBlue:
+                    Puzzle.Blue.Pickup();
+                    break;
+                case ExtraType.PuzzlePurple:
+                    Puzzle.Purple.Pickup();
+                    break;
+                case ExtraType.PuzzleGold:
+                    Puzzle.Gold.Pickup();
+                    break;
             }
 
             UpdateInfo();
         }
     }
+
 
 
     public void TryBuyMagnet()
@@ -103,6 +139,28 @@ public class ExtraWindow : ShopWindow
     }
 
 
+    public void TryBuyPuzzleGray()
+    {
+        TryBuy(ExtraType.PuzzleGray);
+    }
+
+    public void TryBuyPuzzleBlue()
+    {
+        TryBuy(ExtraType.PuzzleBlue);
+    }
+
+    public void TryBuyPuzzlePurple()
+    {
+        TryBuy(ExtraType.PuzzlePurple);
+    }
+
+    public void TryBuyPuzzleGold()
+    {
+        TryBuy(ExtraType.PuzzleGold);
+    }
+
+
+
 
     public override void Enable(ShopWindowType type) { gameObject.SetActive(true); }
 
@@ -117,5 +175,10 @@ public enum ExtraType
     Double,
     Rocket,
     Heart,
-    Accelerator
+    Accelerator,
+
+    PuzzleGray,
+    PuzzleBlue,
+    PuzzlePurple,
+    PuzzleGold
 }

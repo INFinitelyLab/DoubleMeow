@@ -1,4 +1,6 @@
 using UnityEngine;
+using System;
+
 
 public sealed class Puzzle
 {
@@ -18,6 +20,8 @@ public sealed class Puzzle
 
         Count--;
 
+        Changed?.Invoke();
+
         return true;
     }
 
@@ -29,6 +33,15 @@ public sealed class Puzzle
     public void Initialize(int count)
     {
         Count = count;
+
+        Changed?.Invoke();
+    }
+
+    public void Pickup()
+    {
+        Count++;
+
+        Changed?.Invoke();
     }
 
     #endregion
@@ -39,6 +52,8 @@ public sealed class Puzzle
     public static Puzzle Blue { get; private set; } = new Puzzle( PuzzleType.Blue );
     public static Puzzle Purple { get; private set; } = new Puzzle( PuzzleType.Purple );
     public static Puzzle Gold { get; private set; } = new Puzzle( PuzzleType.Gold );
+
+    public static Action Changed;
 
 
     public static Puzzle GetByType(PuzzleType type)

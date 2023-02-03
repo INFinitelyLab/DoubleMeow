@@ -175,52 +175,11 @@ public class Building : MonoBehaviour, IGroundeable
         {
             DecorationBuilding after = Instantiate(originAfter, insidePoint - (rotation) * new Vector3((isLeft ? 5.5f : -5.5f), -(height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), 1), Quaternion.Euler(0, rotation.eulerAngles.y + (turner.Direction == Direction.Left ? -90 : 90), 0));
             after.transform.localScale = new Vector3(isLeft ? 1 : -1, 1, 1);
-        }*/
+        }
         if (originBefore != null)
         {
             DecorationBuilding before = Instantiate(originBefore, insidePoint - (rotation) * new Vector3(isLeft ? 1 : -1, -(height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), 7.5f), Quaternion.Euler(0, rotation.eulerAngles.y, 0)); // Before main building
             before.transform.localScale = new Vector3( isLeft? 1 : -1, 1, 1 );
-        }
-
-        //=== Outside building's ===//
-
-        float currentPoint = 10;
-
-        DecorationBuilding building = null;
-        DecorationBuilding origin = _prefabs.Where(p => p.Width < currentPoint - startPoint).ToList().Random();
-        Vector3 offset = new Vector3( isLeft? DecorationBuildingDistanceToBuilding : -DecorationBuildingDistanceToBuilding, (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), currentPoint );
-
-        if( origin != null )
-        {
-            offset.z -= origin.Width;
-        }
-
-        while( origin != null )
-        {
-            building = Instantiate( origin, position + rotation * offset, rotation );
-            building.transform.localScale = new Vector3( isLeft? -1 : 1, 1, 1 );
-
-            currentPoint -= origin.Width + DecorationBulidingDistance;
-            offset.z = currentPoint - origin.Width;
-
-            origin = _prefabs.Where( p => p.Width < currentPoint - startPoint ).ToList().Random();
-        }
-
-        currentPoint = 6;
-
-        building = null;
-        origin = _prefabs.Where(p => p.Width < 13 - currentPoint).ToList().Random();
-        offset = new Vector3( (currentPoint) * (isLeft? -1 : 1), (height + DecorationBuildingHeight + Random.Range(-3, 0.8f)), DecorationBuildingDistanceToBuilding + 16 );
-
-        /*while( origin != null )
-        {
-            building = Instantiate(origin, position + rotation * offset, Quaternion.Euler(rotation.eulerAngles.x, rotation.eulerAngles.y + (isLeft ? -90 : 90), rotation.eulerAngles.z));
-            building.transform.localScale = new Vector3(isLeft ? -1 : 1, 1, 1);
-
-            currentPoint += origin.Width + 1;
-            offset.x = (currentPoint) * (isLeft? -1 : 1);
-
-            origin = _prefabs.Where(p => p.Width < 13 - currentPoint).ToList().Random();
         }*/
 
         return 0;

@@ -1,5 +1,7 @@
 using UnityEngine;
 
+
+[RequireComponent(typeof(Collider))]
 public class SolarPanel : Placeable
 {
     private Vector3 targetPosition;

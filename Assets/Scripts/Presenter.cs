@@ -55,7 +55,11 @@ public class Presenter : MonoBehaviour
 
     public static void UpdateSkin()
     {
-        if (Skin.Current != null) Player.Presenter._mesh.material = Skin.Current.Material;
+        if (Skin.Current != null)
+        {
+            if (Skin.Current.Material != null) Player.Presenter._mesh.material = Skin.Current.Material;
+            if (Skin.Current.Mesh != null) Player.Presenter._mesh.sharedMesh = Skin.Current.Mesh;
+        }
     }
 
 

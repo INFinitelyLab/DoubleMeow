@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9530a0ccd0c5a3a4d8fc18940b954af6, type: 3}
+  m_Name: Discounter
+  m_EditorClassIdentifier: 
+  _possibleItems:
+  - {fileID: 11400000, guid: 900a20d3d15d66843b799995a4e4c56d, type: 2}
+  - {fileID: 11400000, guid: 278c34487f5cfcd44818dc06fcf8f9c8, type: 2}
+  _chances: 0a000000140000001e000000

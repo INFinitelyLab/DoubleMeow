@@ -67,7 +67,7 @@ public class Obstacler : ObstaclerBase
             else
             {
                 GenerateObstacles(building, isPortalize);
-               GeneratePickups(building, isPortalize);
+                GeneratePickups(building, isPortalize);
             }
 
         }

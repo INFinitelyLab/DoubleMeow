@@ -19,6 +19,7 @@ public static class Inventory
         if (Has(item))
             throw new Exception("Нельзя положить предмет в инвентарь: предмет уже есть!");
 
+        Notice.Notify(item);
         _items.Add(item);
     }
 

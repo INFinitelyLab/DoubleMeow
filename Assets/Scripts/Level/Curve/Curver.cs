@@ -48,34 +48,21 @@ public class Curver : MonoBehaviour
         _decoEndPoint = decoEndPoint;
 
         _startPosition = position;
-        
+
         _regenTrigger.Triggered += Regenerate;
-        
-        CreateNewBuilding( _startBuilding, position, rotation );
-        _decoEndPoint = Building.PlaceDecorations(0, _decoEndPoint, position, rotation, _startBuilding.EndPoint.transform.localPosition.z, _decoPrefabs, isPreviousVehicle? 2 : 1);
+
+        CreateNewBuilding(_startBuilding, position, rotation);
+        _decoEndPoint = Building.PlaceDecorations(0, _decoEndPoint, position, rotation, _startBuilding.EndPoint.transform.localPosition.z, _decoPrefabs, isPreviousVehicle ? 2 : 1);
 
         _distance += _startBuilding.EndPoint.transform.localPosition.z;
 
         IsEnabled = true;
-
-        CreateRegeneratePoint();
-    }
-
-
-    public void CreateRegeneratePoint()
-    {
-        Vector3 position = Player.Movement.TurnPositionWithoutRotation;
-
-        GameObject regenerationPoint = new GameObject();
-
-        regenerationPoint.transform.position = position;
-        regenerationPoint.AddComponent<RegeneratePoint>();
     }
 
 
     private Curve CreateNewBuilding(Curve origin, Vector3 position, Quaternion rotation)
     {
-        Curve building = Instantiate(origin, position, rotation, transform);
+        Curve building = Instantiate(origin, position, rotation);
 
         return building;
     }
@@ -83,7 +70,8 @@ public class Curver : MonoBehaviour
 
     public void Regenerate()
     {
-        float targetDistance = Vector3.Distance(_player.position, _startPosition) + _generationDistance;
+        Debug.Log("Player Distance: " + Player.Movement.GetDistanceTo(_startPosition));
+        float targetDistance = Player.Movement.GetDistanceTo(_startPosition) + _generationDistance;
 
         Curve building = null;
 

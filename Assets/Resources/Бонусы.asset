@@ -18,3 +18,7 @@ MonoBehaviour:
   _ticketPrice: 50
   _heartPrice: 50
   _acceleratorPrice: 50
+  _puzzleGrayPrice: 10
+  _puzzleBluePrice: 25
+  _puzzlePurplePrice: 50
+  _puzzleGoldPrice: 100

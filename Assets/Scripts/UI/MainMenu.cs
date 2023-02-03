@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System;
 
 public class MainMenu : MonoBehaviour   
 {
@@ -15,7 +16,11 @@ public class MainMenu : MonoBehaviour
     public static GameObject MiniGamesWindow => Instance._miniGames;
     public static GameObject BattlepassWindow => Instance._battlepass;
 
+    public static Action WindowAreOpenOrClosed;
+
     public static bool IsOpened => Instance == null? false : Instance.gameObject.activeInHierarchy;
+
+    public static bool IsIn => Shop.activeInHierarchy == false && MiniGamesWindow.activeInHierarchy == false && BattlepassWindow.activeInHierarchy == false && Settings.gameObject.activeInHierarchy == false;
 
     private static bool _isNeedToOpen;
     private static bool _isNeedToOpenShop;
@@ -56,11 +61,15 @@ public class MainMenu : MonoBehaviour
     public static void Open()
     {
         Instance.gameObject.SetActive(true);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
     public static void Close()
     {
         Instance.gameObject.SetActive(false);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
 
@@ -68,51 +77,67 @@ public class MainMenu : MonoBehaviour
     {
         Settings.gameObject.SetActive(true);
         Settings.OnOpen();
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
     public static void CloseSettings()
     {
         Settings.OnClose();
         Settings.gameObject.SetActive(false);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
 
     public void OpenShop()
     {
         _shop.SetActive(true);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
     public void CloseShop()
     {
         _shop.SetActive(false);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
 
     public void OpenMiniGames()
     {
         _miniGames.SetActive(true);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
     public void CloseMiniGames()
     {
         _miniGames.SetActive(false);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
 
     public void OpenBattlepass()
     {
         _battlepass.SetActive(true);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
     public void CloseBattlepass()
     {
         _battlepass.SetActive(false);
+
+        WindowAreOpenOrClosed?.Invoke();
     }
 
 
     public static void ResetScene()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(0);
     }
 
 

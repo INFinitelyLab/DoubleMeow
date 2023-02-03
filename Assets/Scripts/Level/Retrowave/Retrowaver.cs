@@ -58,13 +58,11 @@ public class Retrowaver : MonoBehaviour
 
     public void Regenerate()
     {
-        float targetDistance = Vector3.Distance(_player.position, _startPosition) + _generationDistance;
+        float targetDistance = Player.Movement.GetDistanceTo(_startPosition) + _generationDistance;
 
         while (_distance < targetDistance)
         {
             building = CreateNewBuilding(_prefabs.Random(), (_rotation * (Vector3.forward * _distance)) + _startPosition, _rotation);
-
-            //_decorator.Decorate(building);
 
             _line = _obstacler.Generate(building, _line);
 

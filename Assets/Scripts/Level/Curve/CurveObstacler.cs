@@ -20,7 +20,7 @@ public class CurveObstacler : ObstaclerBase
 
         Cells = new Cell[size.x, size.y];
 
-        //GenerateSolarPanels(curve);
+        GenerateSolarPanels(curve);
         GenerateMilk(curve, startIntLine, out int EndIntLine);
 
         return EndIntLine;

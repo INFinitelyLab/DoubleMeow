@@ -54,7 +54,7 @@ public class Debuger : SingleBehaviour<Debuger>
 
         UpdateInfo();
 
-        Destroy(_generation);
+        if (_generation) Destroy(_generation);
 
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
     }
@@ -110,42 +110,9 @@ public class Debuger : SingleBehaviour<Debuger>
     }
 
 
-    public void ResetMilks()
-    {
-        PlayerPrefs.DeleteAll();
-
-        Stats.Load();
-
-        Stats.Save();
-    }
-
 
     private void OnDisable()
     {
         _asset.renderScale = 1;
     }
-
-#if UNITY_EDITOR
-    [MenuItem("Milks/Get Free 100 Milks!")]
-    private static void GetFree100Coins() => GetFreeCoins(100);
-
-    [MenuItem("Milks/Get Free 1000 Milks!")]
-    private static void GetFree1000Coins() => GetFreeCoins(1000);
-
-    [MenuItem("Milks/Get Free 10000 Milks!")]
-    private static void GetFree10000Coins() => GetFreeCoins(10000);
-
-    [MenuItem("Milks/Get Free 100000 Milks!")]
-    private static void GetFree100000Coins() => GetFreeCoins(100000);
-
-
-    private static void GetFreeCoins(int coinsCount)
-    {
-        Stats.Load();
-
-        Stats.IncreaseCoin(coinsCount);
-
-        Stats.Save();
-    }
-#endif
 }

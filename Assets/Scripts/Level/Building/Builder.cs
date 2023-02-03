@@ -76,7 +76,9 @@ public class Builder : SingleBehaviour<Builder>
     private RoadLine _endLine = RoadLine.Venus;
 
     private Building _lastBuilding;
+    
     public bool IsCanPlaceEr => _isNeedToEnableCurveMode == false && _isNeedToEnableMetroMode == false && _isNeedToEnableTilerMode == false && _isNeedToEnableRetroMode == false;
+    public Quaternion Rotation => _rotation;
 
     private List<Building> _buildingAfterHulkPickup;
     private bool _isNeedToRecordBuildings = false;
@@ -150,9 +152,9 @@ public class Builder : SingleBehaviour<Builder>
         if (isActiveAndEnabled == false) return;
 
         Vector3 currentPlayerPosition = Player.Movement.transform.position;
-        Vector3 lastBuildingPosition = _lastBuildingPosition;    // Object null bag
+        Vector3 lastBuildingPosition = _lastBuildingPosition;
 
-        while ( Vector3.Distance(currentPlayerPosition, lastBuildingPosition) < _distanceForDecoBuildings)
+        while ( -Player.Movement.GetDistanceTo(lastBuildingPosition) < _distanceForDecoBuildings)
         {
             _pastBuilding = _currentBuilding;
             _currentBuilding = Portal.IsWaitingForSecondPortal ? _startBuilding : (_nextBuildingIsVehicle? (Random.Range(0,2) == 1? _vehicle : _train) : PickRandomBuilding(_endLine, _nextBuildingIsVehicle, _vehicle));
@@ -255,7 +257,7 @@ public class Builder : SingleBehaviour<Builder>
             building.transform.position = _startPoint.position;
         }
 
-        _lastBuildingPosition = building.transform.position;
+        _lastBuilding = building;
 
         if (isStartBuilding == false)
         {
@@ -297,7 +299,7 @@ public class Builder : SingleBehaviour<Builder>
 
         CreateLoseTrigger(_lastBuildingEndPosition, building.transform.position, building.transform);
 
-        _lastBuilding = building;
+        _lastBuildingPosition = building.transform.position;
         _lastBuildingEndPosition = building.EndPoint.position;
 
         if (isStartBuilding == false && origin != _vehicle && origin != _train && origin != _upper)
@@ -334,9 +336,9 @@ public class Builder : SingleBehaviour<Builder>
 
         LoseTrigger trigger = Instantiate(_loseTrigger, parent);
 
+        trigger.transform.rotation = _rotation;
         trigger.transform.position = losePosition;
         trigger.transform.localScale = loseSize;
-        trigger.transform.rotation = _rotation;
     }
 
 
@@ -712,13 +714,13 @@ public class Builder : SingleBehaviour<Builder>
         yield return new WaitUntil(() => IsCanPlaceEr == true);
         yield return new WaitForSeconds(5);
 
-        _nextErIndex = 3; // Random.Range(0, 4);
+        _nextErIndex = 2; // Random.Range(0, 4);
 
         while (isActiveAndEnabled)
         {
-            StartNextEr();
+            _isNeedToTurn = true;
 
-            yield return new WaitUntil(() => IsCanPlaceEr == true);
+            yield return new WaitUntil(() => _isNeedToTurn == false);
             yield return new WaitUntil(() => Drone.Instance.IsEnabled == false);
             yield return StartCoroutine(WaitTimer(10));
 
@@ -728,9 +730,9 @@ public class Builder : SingleBehaviour<Builder>
             yield return new WaitUntil(() => Drone.Instance.IsEnabled == false);
             yield return StartCoroutine(WaitTimer(10));
         
-            _isNeedToTurn = true;
+            StartNextEr();
 
-            yield return new WaitUntil(() => _isNeedToTurn == false);
+            yield return new WaitUntil(() => IsCanPlaceEr == true);
             yield return new WaitUntil(() => Drone.Instance.IsEnabled == false);
             yield return StartCoroutine(WaitTimer(10));
         }

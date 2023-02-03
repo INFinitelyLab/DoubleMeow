@@ -17,6 +17,7 @@ public static class DoubleData
         if (data == null) return;
 
         Bank.Update( new BankData(data.Coins) );
+        Notice.Initialize( data.Notices );
         Inventory.Update( new InventoryData( data.Inventory, data.PuzzledItems ) );
         Battlepass.Update( new BattlepassData( data.BattlepassLevel, data.BattlepassProgress, data.BattlepassIsPremium, data.BattlepassAvailableItems ) );
 
@@ -41,6 +42,7 @@ public static class DoubleData
         SaveData data = new SaveData();
 
         data.Coins = Bank.Coins;
+        data.Notices = Notice.GetItemsIDs();
         data.Inventory = Inventory.GetItemsIDs();
         data.PuzzledItems = Inventory.PuzzledItems.Select( p => p.GetData() ).ToArray();
 
@@ -80,6 +82,7 @@ public class SaveData
     public bool BattlepassIsPremium = false;
     public string[] BattlepassAvailableItems = new string[0];
 
+    public string[] Notices = new string[0];
     public string[] Inventory = new string[0];
     public PuzzledItemData[] PuzzledItems = new PuzzledItemData[0];
 

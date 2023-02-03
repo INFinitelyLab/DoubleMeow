@@ -9,6 +9,8 @@ public class SkinPuzzled : Skin
     public bool IsPurchased => PuzzleCollected >= Price;
 
 
+    public void OnDisable() => PuzzleCollected = 0;
+
     public void Initialize(int puzzleCollected)
     {
         PuzzleCollected = puzzleCollected;

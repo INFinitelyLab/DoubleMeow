@@ -1,15 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 
 public class ShopUIElement : MonoBehaviour
 {
     [SerializeField] private Image _image;
+    [SerializeField] private Notice _notice;
 
 
     public InventoryItem Item { get; private set; }
-
 
     public virtual void Initialize(InventoryItem item, ShopUIElementState state)
     {
@@ -18,12 +17,22 @@ public class ShopUIElement : MonoBehaviour
         _image.sprite = item.Icon;
 
         _image.color = GetElementColorByState(state);
+
+        if (Shop.SelectedItem == item) Notice.Unotify(item);
+
+        if (_notice != null) _notice.UpdateState(item);
     }
 
 
     public virtual void Select()
     {
         Shop.Select(Item);
+
+        if (_notice != null)
+        {
+            Notice.Unotify(Item);
+            _notice.UpdateState(Item);
+        }
     }
 
 

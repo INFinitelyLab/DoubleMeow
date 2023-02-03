@@ -4,6 +4,7 @@ using UnityEngine;
 public class Skin : InventoryItem
 {
     [field: SerializeField] public Material Material { get; private set; }
+    [field: SerializeField] public Mesh Mesh { get; private set; }
 
 
     #region Static

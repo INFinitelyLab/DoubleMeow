@@ -95,7 +95,7 @@ public class Metroer : MonoBehaviour
 
     public void Regenerate()
     {
-        float targetDistance = Vector3.Distance(_player.position, _startPosition) + _generationDistance;
+        float targetDistance = Player.Movement.GetDistanceTo(_startPosition) + _generationDistance;
 
         while (_distance < targetDistance)
         {

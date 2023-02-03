@@ -38,11 +38,14 @@ public class StartPlatform : SingleBehaviour<StartPlatform>
 
         while( Game.IsActive == false )
         {
-            time += Time.deltaTime / 3;
+            if (MainMenu.IsIn)
+            {
+                time += Time.deltaTime / 3;
 
-            addPosition.x = Mathf.Sin( time * Mathf.PI ) * 0.02f;
-            addPosition.y = Mathf.Cos( time * Mathf.PI ) * 0.02f;
-            camera.position = position + addPosition;
+                addPosition.x = Mathf.Sin( time * Mathf.PI ) * 0.02f;
+                addPosition.y = Mathf.Cos( time * Mathf.PI ) * 0.02f;
+                camera.position = position + addPosition;
+            }
 
             yield return null;
         }

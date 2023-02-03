@@ -30,6 +30,8 @@ public class Selector : MonoBehaviour
 
         if (item is SkinPuzzled skin) return skin.PuzzleCollected + " " + skin.PuzzleType.ToString();
 
+        if (item == Discounter.TodayItem) return (item.Price * (1 - ((float)Discounter.RandomChance / 100f))).ToString() + " (-" + Discounter.RandomChance + ")";
+
         return item.Price + (item.IsDonateItem ? "$" : "");
     }
 

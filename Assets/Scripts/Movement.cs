@@ -10,7 +10,6 @@ public class Movement : MonoBehaviour
     [SerializeField] private float _gravityScale;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _roadWidth;
-    [SerializeField] private float _rotateRadius = 15;
     [SerializeField] private float _curveAroundHeight;
     [SerializeField] private float _curveAroundWidth;
     [SerializeField] private GroundChecker _grounder;
@@ -415,6 +414,11 @@ public class Movement : MonoBehaviour
         _targetPosition.x = Position.x - TurnPosition.x;
 
         _line = (RoadLine)Mathf.RoundToInt(_targetPosition.x);
+    }
+
+    public float GetDistanceTo(Vector3 position)
+    {
+        return ( Quaternion.Inverse( Builder.Instance.Rotation ) * (_transform.position - position) ).z;
     }
 
 

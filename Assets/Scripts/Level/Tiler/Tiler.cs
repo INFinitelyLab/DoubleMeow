@@ -61,7 +61,7 @@ public class Tiler : MonoBehaviour
 
     private Tile CreateNewTile(Tile origin, Vector3 position)
     {
-        Tile tile = Instantiate(origin, position, Quaternion.identity, transform);
+        Tile tile = Instantiate(origin, position, _rotation);
 
         StartCoroutine(WaitForActive(_player, tile.transform));
 
@@ -117,7 +117,7 @@ public class Tiler : MonoBehaviour
 
     public void Regenerate()
     {
-        float targetDistance = Mathf.Clamp(Vector3.Distance(_player.position, _startPosition) + 35, 0, _targetDistance);
+        float targetDistance = Mathf.Clamp(Player.Movement.GetDistanceTo(_startPosition) + 35, 0, _targetDistance);
 
         Tile tile = null;
 

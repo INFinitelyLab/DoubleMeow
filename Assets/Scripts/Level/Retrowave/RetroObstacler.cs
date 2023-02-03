@@ -112,9 +112,9 @@ public class RetroObstacler : ObstaclerBase
 
                 position *= 0.746f;
 
-                CreateObstacle( _milk, position + rotation * Vector3.forward * 0.000f, building.transform );
-                CreateObstacle( _milk, position + rotation * Vector3.forward * 0.746f, building.transform );
-                CreateObstacle( _milk, position + rotation * Vector3.forward * 1.492f, building.transform );
+                CreateObstacle( _milk, position + Vector3.forward * 0.000f, building.transform );
+                CreateObstacle( _milk, position + Vector3.forward * 0.746f, building.transform );
+                CreateObstacle( _milk, position + Vector3.forward * 1.492f, building.transform );
             }
         }
     }

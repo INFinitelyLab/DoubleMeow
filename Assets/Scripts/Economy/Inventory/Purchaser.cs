@@ -59,7 +59,7 @@ public sealed class Purchaser : IAPButton
 
     private static bool TryPurchaseForCoins(InventoryItem item)
     {
-        if (Bank.TryDecreaseCoins(item.Price) == true)
+        if (Bank.TryDecreaseCoins(Mathf.RoundToInt(item.Price * (item == Discounter.TodayItem ? (1 - ((float)Discounter.RandomChance / 100f)) : 1))) == true)
         {
             PurchaseCompleted?.Invoke();
 

@@ -5,7 +5,7 @@ using System;
 public static class Bank
 {
     public static int Coins { get; private set; }
-    public static int ExchangeRate { get; private set; } = 10; // Количество молочка за 1 монетку
+    public static int ExchangeRate { get; private set; } = 125; // Количество молочка за 1 монетку
 
     public static event Action<int> Exchanged;
     public static event Action<int> CoinsIncreased;
@@ -17,6 +17,8 @@ public static class Bank
         if (milkCount < ExchangeRate) return;
 
         IncreaseCoins(Mathf.FloorToInt(milkCount / ExchangeRate));
+
+        Exchanged?.Invoke(Coins);
     }
 
     public static void IncreaseCoins(int value)

@@ -19,3 +19,4 @@ MonoBehaviour:
   <PurchaseType>k__BackingField: 1
   <IsDonateItem>k__BackingField: 1
   <Material>k__BackingField: {fileID: -3522955778539423533, guid: 8106364526f2baf41acf7b06ecca871b, type: 3}
+  <Mesh>k__BackingField: {fileID: 0}
